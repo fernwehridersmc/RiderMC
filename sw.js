@@ -1,6 +1,6 @@
 // Diário de Estrada — service worker: deixa o app abrir sem internet
 // e guarda os pedaços de mapa já vistos para quando faltar sinal na estrada.
-const VERSAO = "v2";
+const VERSAO = "v3";
 const APP = "app-" + VERSAO;
 const TILES = "tiles-v1";
 const FONTES = "fontes-v1";
@@ -27,8 +27,26 @@ async function limitar(nome, max) {
 
 self.addEventListener("fetch", e => {
   const req = e.request;
-  if (req.method !== "GET") return;
   const url = new URL(req.url);
+
+  // GPX compartilhado por outro app (menu "Compartilhar" do Android)
+  if (req.method === "POST" && url.pathname.endsWith("/receber-gpx")) {
+    e.respondWith((async () => {
+      try {
+        const form = await req.formData();
+        const c = await caches.open("compartilhados");
+        let i = 0;
+        for (const f of form.getAll("gpx")) {
+          if (!f || typeof f === "string") continue;
+          await c.put(new Request("./compartilhado-" + Date.now() + "-" + (i++)),
+            new Response(await f.text(), { headers: { "X-Nome": encodeURIComponent(f.name || "viagem.gpx") } }));
+        }
+      } catch (err) {}
+      return Response.redirect(new URL("./?compartilhado=1", self.registration.scope).href, 303);
+    })());
+    return;
+  }
+  if (req.method !== "GET") return;
 
   // Mapa: usa o que já tem guardado, senão busca e guarda
   if (url.hostname.endsWith("tile.openstreetmap.org")) {

@@ -454,6 +454,19 @@ function mergeDates(t){const ds=[t.inicio,t.fim].filter(Boolean).sort();t.inicio
 
 $("gpxNew").addEventListener("change",async e=>{
   const files=[...e.target.files];e.target.value="";if(!files.length)return;
+  await importNewTrip(files);
+});
+/* GPX recebido pelo "Compartilhar" do Android (Geo Tracker etc.) */
+async function importShared(){
+  if(!/[?&]compartilhado=1/.test(location.search))return;
+  history.replaceState(null,"",location.pathname);
+  try{
+    const c=await caches.open("compartilhados");const ks=await c.keys();const files=[];
+    for(const k of ks){const r=await c.match(k);const txt=await r.text();files.push({name:decodeURIComponent(r.headers.get("X-Nome")||"viagem.gpx"),text:async()=>txt});await c.delete(k)}
+    if(files.length)await importNewTrip(files);else toast("Não chegou nenhum arquivo. Tente compartilhar de novo.");
+  }catch(err){toast("Não consegui ler o arquivo compartilhado.")}
+}
+async function importNewTrip(files){
   const gs=await readGPXFiles(files);if(!gs.length)return;
   gs.sort((a,b)=>(a.ini||"").localeCompare(b.ini||""));
   const all=gs.map(g=>[g.ini,g.fim]).flat().filter(Boolean).sort();
@@ -461,7 +474,7 @@ $("gpxNew").addEventListener("change",async e=>{
   DB.viagens.push(t);if(!save())return;
   toast(`Viagem importada: ${fmtKm(tripKm(t))} km`);
   openTrip(t.id);
-});
+}
 $("gpxAdd").addEventListener("change",async e=>{
   const files=[...e.target.files];e.target.value="";const t=cur();if(!t||!files.length)return;
   const gs=await readGPXFiles(files);if(!gs.length)return;
@@ -580,7 +593,7 @@ async function renderTimeline(t,ss){
     <b>${esc(s.nome||tp.nome)}</b>${s.obs?`<div class="obs">${esc(s.obs)}</div>`:""}
     ${(s.fotos||[]).length?`<div class="thumbs" data-fotos="${s.id}"></div>`:""}
     ${v?`<a class="link" href="${esc(v)}" target="_blank" rel="noopener">▶ Ver vídeo</a>`:""}
-    <div class="row"><button class="btn btn-sm" type="button" data-edit="${s.id}">Editar</button>${s.lat!=null?`<button class="btn btn-sm btn-ghost" type="button" data-fly="${s.id}">Ver no mapa</button>`:""}</div></div></div>`}).join("");
+    <div class="row"><button class="btn btn-sm" type="button" data-edit="${s.id}">Editar</button>${s.lat!=null?`<button class="btn btn-sm btn-ghost" type="button" data-fly="${s.id}">Ver no mapa</button><a class="btn btn-sm btn-ghost" href="https://waze.com/ul?ll=${s.lat},${s.lon}&amp;navigate=yes" target="_blank" rel="noopener">Ir com Waze</a>`:""}</div></div></div>`}).join("");
   el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openStopSheet(b.dataset.edit));
   el.querySelectorAll("[data-fly]").forEach(b=>b.onclick=()=>{const s=t.paradas.find(x=>x.id===b.dataset.fly);mapTrip.setView([s.lat,s.lon],15);$("mapTrip").scrollIntoView({behavior:"smooth",block:"center"})});
   for(const box of el.querySelectorAll("[data-fotos]")){const s=t.paradas.find(x=>x.id===box.dataset.fotos);
@@ -749,7 +762,7 @@ async function renderBackup(){
 
 /* ================= início ================= */
 load();
-idbOpen().then(()=>{go("inicio")});
+idbOpen().then(()=>{go("inicio");importShared()});
 if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("sw.js").catch(()=>{})}
 if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().catch(()=>{})}
 })();
