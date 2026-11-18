@@ -1,6 +1,6 @@
 // Diário de Estrada — service worker: deixa o app abrir sem internet
 // e guarda os pedaços de mapa já vistos para quando faltar sinal na estrada.
-const VERSAO = "v5";
+const VERSAO = "v6";
 const APP = "app-" + VERSAO;
 const TILES = "tiles-v1";
 const FONTES = "fontes-v1";

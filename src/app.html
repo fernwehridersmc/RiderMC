@@ -243,6 +243,27 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
 .daykm{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
 .daykm:last-child{border-bottom:0}
 .daykm b{font-family:var(--mono)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+@media (min-width:700px){.grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.grid button{padding:0;border:0;background:var(--surface-2);aspect-ratio:1;max-width:100%;border-radius:6px;overflow:hidden;cursor:pointer;position:relative}
+.grid img{width:100%;height:100%;object-fit:cover;display:block}
+.vid{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.vid .ic{width:44px;height:44px;border-radius:10px;background:var(--fg);color:var(--bg);display:flex;align-items:center;justify-content:center;font:700 12px/1 var(--mono);flex-shrink:0}
+.vid .t{flex:1;min-width:0}
+.vid .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vid .t small{color:var(--muted)}
+.post{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer;color:var(--fg);min-height:60px}
+.post .rd{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:900 13px/1 var(--body);color:#fff;flex-shrink:0}
+.post .t{flex:1;min-width:0}
+.post .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.post .t small{color:var(--muted);font-size:13px}
+.artwrap{display:flex;justify-content:center;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.artwrap canvas{width:100%;max-width:360px;height:auto;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.3)}
+.picks{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.picks button{flex-shrink:0;width:64px;height:64px;padding:0;border-radius:8px;overflow:hidden;border:3px solid transparent;background:var(--surface-2);cursor:pointer;font-size:12px;font-weight:700;color:var(--muted)}
+.picks button[aria-pressed="true"]{border-color:var(--stripe)}
+.picks img{width:100%;height:100%;object-fit:cover;display:block}
+.viewer .cap{position:absolute;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));color:#F7F7F2;text-align:center;font-weight:700;text-shadow:0 1px 3px #000}
 @media (prefers-reduced-motion:no-preference){.sheet .panel{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
 </style>
 </head>
@@ -358,6 +379,22 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
       <label class="btn file-btn" for="gpxAdd">+ Adicionar GPX de outro dia<input id="gpxAdd" type="file" multiple></label>
     </div>
 
+    <div id="vt-midia" class="section" hidden>
+      <button class="btn btn-sign" type="button" id="artOpen">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M9 15l2-3 2 2 2-3"/></svg>
+        Criar imagem pra postar</button>
+      <div class="section"><h2>Fotos</h2><div class="grid" id="mdFotos"></div></div>
+      <div class="section">
+        <div class="row"><h2 class="grow">Vídeos</h2><button class="btn btn-sm" type="button" id="vidAdd">+ Vídeo</button></div>
+        <div class="list" id="vidList"></div>
+        <p class="note">Vídeo 360 da GoPro Max: suba no YouTube como "não listado" e cole o link aqui. No celular, o app do YouTube tem o ícone de óculos VR pra assistir no Shinecon.</p>
+      </div>
+      <div class="section">
+        <div class="row"><h2 class="grow">Postagens desta viagem</h2><button class="btn btn-sm" type="button" id="tripPostAdd">+ Postagem</button></div>
+        <div class="list" id="tripPosts"></div>
+      </div>
+    </div>
+
     <div id="vt-roteiro" class="section" hidden>
       <p class="note">Monte o roteiro: toque em "Adicionar destino" e depois no mapa. A ordem da lista é a ordem da viagem.</p>
       <div class="list" id="destList"></div>
@@ -437,6 +474,12 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
       <button class="item" type="button" data-go="favoritos">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><path d="M12 6.5l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z"/></svg>
         <span class="t"><b>Lugares favoritos</b><small>Paradas marcadas como "vale voltar"</small></span></button>
+      <button class="item" type="button" data-go="posts">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+        <span class="t"><b>Postagens</b><small id="maisPosts">Instagram e Estrada X</small></span></button>
+      <button class="item" type="button" data-go="galeria">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span class="t"><b>Galeria</b><small>Todas as fotos das viagens</small></span></button>
       <button class="item" type="button" data-go="gastos">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg>
         <span class="t"><b>Todos os gastos</b><small>Viagens, moto e avulsos</small></span></button>
@@ -500,6 +543,46 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
     <p class="note">Toda parada marcada com "Vale voltar" aparece aqui, com o Waze a um toque.</p>
     <div class="years" id="favFilter" role="group" aria-label="Filtrar por tipo"></div>
     <div class="list" id="favList"></div>
+  </section>
+
+  <!-- ================= GALERIA ================= -->
+  <section class="screen" id="scr-galeria" hidden aria-labelledby="t-gal">
+    <div class="row"><button class="back" type="button" data-go="mais"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Mais</button></div>
+    <h3 id="t-gal">Galeria</h3>
+    <select id="galTrip" aria-label="Filtrar por viagem"></select>
+    <div class="years" id="galTipo" role="group" aria-label="Filtrar por tipo de parada"></div>
+    <p class="note" id="galCount"></p>
+    <div class="grid" id="galGrid"></div>
+  </section>
+
+  <!-- ================= POSTAGENS ================= -->
+  <section class="screen" id="scr-posts" hidden aria-labelledby="t-posts">
+    <div class="row"><button class="back" type="button" data-go="mais"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Mais</button></div>
+    <div class="row"><h3 id="t-posts" class="grow">Postagens</h3><button class="btn btn-sm btn-sign" type="button" id="postAdd">+ Postagem</button></div>
+    <div class="stats s4" id="postStats"></div>
+    <div class="years" id="postStatus" role="group" aria-label="Filtrar por situação"></div>
+    <div class="years" id="postRede" role="group" aria-label="Filtrar por rede"></div>
+    <div class="list" id="postList"></div>
+    <div class="section" id="postIdeasBox">
+      <h2>Ainda sem post</h2>
+      <p class="note">Favoritos e monumentos que ainda não viraram conteúdo.</p>
+      <div class="list" id="postIdeas"></div>
+    </div>
+  </section>
+
+  <!-- ================= IMAGEM PRA POSTAR ================= -->
+  <section class="screen" id="scr-arte" hidden aria-labelledby="t-arte">
+    <div class="row"><button class="back" type="button" id="artBack"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Viagem</button></div>
+    <h3 id="t-arte">Imagem pra postar</h3>
+    <div class="years" id="artFmt" role="group" aria-label="Formato"></div>
+    <div class="section" style="gap:6px"><span class="hint">Foto de fundo</span><div class="picks" id="artFotos"></div></div>
+    <div class="years" id="artOpts" role="group" aria-label="O que mostrar"></div>
+    <div class="artwrap"><canvas id="artCanvas" width="1080" height="1920" role="img" aria-label="Prévia da imagem da viagem"></canvas></div>
+    <div class="row">
+      <button class="btn btn-sign grow" type="button" id="artShare">Compartilhar</button>
+      <button class="btn grow" type="button" id="artSave">Baixar imagem</button>
+    </div>
+    <p class="note">"Compartilhar" abre o menu do Android: dá pra mandar direto pro Instagram, Estrada X ou WhatsApp.</p>
   </section>
 
   <!-- ================= BACKUP ================= -->
@@ -693,6 +776,51 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
   </div>
 </div>
 
+<!-- folha: vídeo -->
+<div class="sheet" id="shVid" hidden role="dialog" aria-modal="true" aria-labelledby="shVidT">
+  <div class="panel">
+    <div class="grab"></div>
+    <h3 id="shVidT">Vídeo</h3>
+    <form class="f" id="fVid">
+      <label class="full" for="vdTit">Título<input id="vdTit" type="text" required placeholder="Ex.: Descida da serra em 360"></label>
+      <label class="full" for="vdUrl">Link (YouTube, Drive…)<input id="vdUrl" type="url" inputmode="url" required placeholder="https://"></label>
+      <label class="full check" for="vd360"><input id="vd360" type="checkbox" checked>É vídeo 360 (GoPro Max)</label>
+      <label class="full" for="vdStop">Parada (opcional)<select id="vdStop"></select></label>
+      <div class="full row">
+        <button class="btn btn-sign grow" type="submit">Salvar</button>
+        <button class="btn" type="button" data-close>Cancelar</button>
+      </div>
+      <div class="full row" id="vdDelRow"><button class="btn btn-danger btn-sm" type="button" id="vdDel">Apagar vídeo</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- folha: postagem -->
+<div class="sheet" id="shPost" hidden role="dialog" aria-modal="true" aria-labelledby="shPostT">
+  <div class="panel">
+    <div class="grab"></div>
+    <h3 id="shPostT">Postagem</h3>
+    <form class="f" id="fPost">
+      <label class="full" for="poTit">Assunto<input id="poTit" type="text" required placeholder="Ex.: Monumento Rota 513 em Ponta Grossa"></label>
+      <div class="full section" style="gap:6px"><span class="hint">Rede</span><div class="years" id="poRede" role="group" aria-label="Rede"></div></div>
+      <div class="full section" style="gap:6px"><span class="hint">Situação</span><div class="years" id="poStatus" role="group" aria-label="Situação"></div></div>
+      <label for="poFmt">Formato<select id="poFmt"><option>Carrossel</option><option>Post</option><option>Reels</option><option>Story</option><option>Vídeo</option></select></label>
+      <label for="poData">Data<input id="poData" type="date"></label>
+      <label class="full" for="poTrip">Viagem<select id="poTrip"></select></label>
+      <label class="full" for="poStop">Parada<select id="poStop"></select></label>
+      <label class="full" for="poLink">Link do post<input id="poLink" type="url" inputmode="url" placeholder="https://"></label>
+      <label for="poViews">Visualizações<input id="poViews" type="text" inputmode="numeric" placeholder="Ex.: 1250"></label>
+      <label for="poSerie">Série<select id="poSerie"><option value="">Nenhuma</option><option>Rota Biker</option><option>História das motos</option><option>Viagem</option></select></label>
+      <label class="full" for="poObs">Anotações<textarea id="poObs" placeholder="Roteiro, legenda, música, hashtags…"></textarea></label>
+      <div class="full row">
+        <button class="btn btn-sign grow" type="submit">Salvar</button>
+        <button class="btn" type="button" data-close>Cancelar</button>
+      </div>
+      <div class="full row" id="poDelRow"><button class="btn btn-danger btn-sm" type="button" id="poDel">Apagar postagem</button></div>
+    </form>
+  </div>
+</div>
+
 <!-- folha: destino do roteiro -->
 <div class="sheet" id="shDest" hidden role="dialog" aria-modal="true" aria-labelledby="shDestT">
   <div class="panel">
@@ -709,7 +837,7 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
   </div>
 </div>
 
-<div class="viewer" id="viewer" hidden><img id="viewerImg" alt="Foto da parada"><button class="btn" type="button" id="viewerClose">Fechar</button></div>
+<div class="viewer" id="viewer" hidden><img id="viewerImg" alt="Foto da parada"><button class="btn" type="button" id="viewerClose">Fechar</button><div class="cap" id="viewerCap"></div></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -787,13 +915,13 @@ const DEFAULT_ITENS=[
 /* ================= dados ================= */
 let DB={};
 function defaultMon(){return DEFAULT_MON.map(([n,nome,cidade,uf,lat,lon])=>({id:uid("rb"),num:n,nome,cidade,uf,lat,lon,aprox:true,visitado:false,data:"",carimbo:false,obs:"",parada:null}))}
-function fresh(){return{versao:3,viagens:[],gastos:[],itens:DEFAULT_ITENS.map(i=>({id:uid("m"),...i,ultKm:null,ultData:""})),moto:{nome:"Master Ride",placa:"",tanque:null,odo:null,odoData:""},monumentos:defaultMon(),ultimoBackup:null}}
+function fresh(){return{versao:3,viagens:[],gastos:[],itens:DEFAULT_ITENS.map(i=>({id:uid("m"),...i,ultKm:null,ultData:""})),moto:{nome:"Master Ride",placa:"",tanque:null,odo:null,odoData:""},monumentos:defaultMon(),posts:[],ultimoBackup:null}}
 function normalize(d){
   const f=fresh();
   d=d&&typeof d==="object"?d:{};
   return{versao:3,viagens:Array.isArray(d.viagens)?d.viagens:[],gastos:Array.isArray(d.gastos)?d.gastos:[],
     itens:Array.isArray(d.itens)?d.itens:f.itens,moto:Object.assign(f.moto,d.moto||{}),
-    monumentos:Array.isArray(d.monumentos)?d.monumentos:f.monumentos,ultimoBackup:d.ultimoBackup||null};
+    monumentos:Array.isArray(d.monumentos)?d.monumentos:f.monumentos,posts:Array.isArray(d.posts)?d.posts:[],ultimoBackup:d.ultimoBackup||null};
 }
 function load(){try{const r=localStorage.getItem(KEY);DB=normalize(r?JSON.parse(r):null)}catch(e){DB=normalize(null)}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));return true}catch(e){toast("Não deu pra salvar: o espaço deste app no celular encheu. Exporte um backup.");return false}}
@@ -982,8 +1110,8 @@ function recomputeStopKm(t){(t.paradas||[]).forEach(s=>{if(s.lat!=null){s.km=sna
 
 /* ================= navegação ================= */
 let screen="inicio",curId=null,vTab="paradas";
-const SCREENS=["inicio","viagens","viagem","mapa","moto","mais","resumo","gastos","backup","rota","favoritos"];
-const TAB_OF={viagem:"viagens",resumo:"mais",gastos:"mais",backup:"mais",rota:"mais",favoritos:"mais"};
+const SCREENS=["inicio","viagens","viagem","mapa","moto","mais","resumo","gastos","backup","rota","favoritos","galeria","posts","arte"];
+const TAB_OF={viagem:"viagens",resumo:"mais",gastos:"mais",backup:"mais",rota:"mais",favoritos:"mais",galeria:"mais",posts:"mais",arte:"viagens"};
 const cur=()=>DB.viagens.find(v=>v.id===curId);
 function go(s){
   screen=s;
@@ -1006,6 +1134,9 @@ function render(){
   if(s==="backup")renderBackup();
   if(s==="rota")renderRota();
   if(s==="favoritos")renderFav();
+  if(s==="galeria")renderGaleria();
+  if(s==="posts")renderPosts();
+  if(s==="arte")renderArte();
   updateMotoDot();
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)go(b.dataset.go)});
@@ -1084,13 +1215,13 @@ $("btnPlan").onclick=()=>openTripSheet(null,true);
 
 /* ================= detalhe da viagem ================= */
 function sortedStops(t){return[...(t.paradas||[])].sort((a,b)=>{const ka=a.km??1e9,kb=b.km??1e9;if(ka!==kb)return ka-kb;return((a.data||"")+(a.hora||"")).localeCompare((b.data||"")+(b.hora||""))||a.criado-b.criado})}
-const VTABS={real:[["paradas","Paradas"],["gastos","Gastos"],["estrada","Estrada"]],plano:[["roteiro","Roteiro"],["bagagem","Bagagem"],["gastos","Gastos"]]};
+const VTABS={real:[["paradas","Paradas"],["gastos","Gastos"],["estrada","Estrada"],["midia","Mídia"]],plano:[["roteiro","Roteiro"],["bagagem","Bagagem"],["gastos","Gastos"]]};
 function renderTripTabs(){
   const t=cur();const tabs=VTABS[t&&t.planejada?"plano":"real"];
   if(!tabs.some(x=>x[0]===vTab))vTab=tabs[0][0];
   $("vSeg").innerHTML=tabs.map(([id,n])=>`<button type="button" role="tab" data-vt="${id}" aria-selected="${id===vTab}">${n}</button>`).join("");
   $("vSeg").querySelectorAll("[data-vt]").forEach(b=>b.onclick=()=>{vTab=b.dataset.vt;renderTripTabs()});
-  ["paradas","gastos","estrada","roteiro","bagagem"].forEach(n=>$("vt-"+n).hidden=n!==vTab);
+  ["paradas","gastos","estrada","midia","roteiro","bagagem"].forEach(n=>$("vt-"+n).hidden=n!==vTab);
 }
 function statBox(v,l){return`<div class="stat"><b>${v}</b><span>${l}</span></div>`}
 function renderTrip(){
@@ -1101,7 +1232,7 @@ function renderTrip(){
   $("btnStop").hidden=!!t.planejada;
   if(t.planejada){const kp=destKm(t),bag=t.checklist||[];
     $("vStats").innerHTML=statBox(kp?"~"+fmtKm(kp):"–","km em linha reta")+statBox(dias(t)||"–","dias")+statBox((t.destinos||[]).length,"destinos")+statBox(`${bag.filter(b=>b.ok).length}/${bag.length}`,"bagagem pronta")}
-  else $("vStats").innerHTML=statBox(fmtKm(km),"km")+statBox(dias(t)||"–","dias")+statBox(fmtR0(gt),"gasto")+statBox(km>0&&gt>0?fmtR(gt/km):"–","R$ por km");
+  else $("vStats").innerHTML=statBox(fmtKm(km),"km")+statBox(dias(t)||"–",dias(t)===1?"dia":"dias")+statBox(fmtR0(gt),"gasto")+statBox(km>0&&gt>0?fmtR(gt/km):"–","R$ por km");
   $("vNotas").textContent=t.notas||"Sem notas. Toque em Editar pra escrever como foi a viagem.";
   if(!mapTrip){mapTrip=mkMap($("mapTrip"));layTrip=L.layerGroup().addTo(mapTrip);mapTrip.on("click",onMapPlace)}
   setTimeout(()=>mapTrip.invalidateSize(),0);
@@ -1121,7 +1252,7 @@ function renderTrip(){
   renderTripTabs();
   renderTimeline(t,ss);
   renderTripGastos(t,gs);
-  if(t.planejada){renderRoteiro(t);renderBagagem(t)}else renderEstrada(t);
+  if(t.planejada){renderRoteiro(t);renderBagagem(t)}else{renderEstrada(t);renderMidia(t)}
 }
 async function renderTimeline(t,ss){
   const el=$("timeline");
@@ -1233,7 +1364,7 @@ $("mEdit").onclick=()=>openMotoSheet(false);
 $("mOdoBtn").onclick=()=>openMotoSheet(true);
 
 /* ================= mais / resumo / gastos ================= */
-function renderMais(){const mv=DB.monumentos.filter(m=>m.visitado).length;$("maisRota").textContent=`${mv} de ${DB.monumentos.length} visitados`;$("maisBackup").textContent=DB.ultimoBackup?"Último: "+new Date(DB.ultimoBackup).toLocaleDateString("pt-BR"):"Nenhum backup feito ainda"}
+function renderMais(){const pp=DB.posts.filter(x=>x.status==="postado").length,pf=DB.posts.filter(x=>x.status!=="postado").length;$("maisPosts").textContent=DB.posts.length?`${pp} postada${pp===1?"":"s"} · ${pf} na fila`:"Instagram e Estrada X";const mv=DB.monumentos.filter(m=>m.visitado).length;$("maisRota").textContent=`${mv} de ${DB.monumentos.length} visitados`;$("maisBackup").textContent=DB.ultimoBackup?"Último: "+new Date(DB.ultimoBackup).toLocaleDateString("pt-BR"):"Nenhum backup feito ainda"}
 let rYear=null;
 function yearChips(el,sel,onPick,withAll){
   const ys=years();const list=(withAll?["todos"]:[]).concat(ys.length?ys:[thisYear()]);
@@ -1636,8 +1767,206 @@ function renderBagagem(t){
 $("bagForm").addEventListener("submit",e=>{e.preventDefault();const t=cur();const v=$("bagNew").value.trim();if(!t||!v)return;(t.checklist=t.checklist||[]).push({id:uid("b"),txt:v,ok:false});$("bagNew").value="";save();renderTrip()});
 $("bagReset").onclick=()=>{const t=cur();(t.checklist||[]).forEach(x=>x.ok=false);save();renderTrip()};
 
+/* ================= mídia da viagem ================= */
+function fotosDaViagem(t){const out=[];sortedStops(t).forEach((s,i)=>(s.fotos||[]).forEach(f=>out.push({f,s,i,v:t})));return out}
+async function fillGrid(el,items){
+  el.innerHTML="";
+  for(const it of items){const u=await fotoURL(it.f);if(!u)continue;const b=document.createElement("button");b.type="button";
+    const cap=`${it.s.nome||tipo(it.s.tipo).nome} · ${it.v.nome}`;b.setAttribute("aria-label","Abrir foto: "+cap);
+    const im=document.createElement("img");im.src=u;im.alt="";im.loading="lazy";b.appendChild(im);b.onclick=()=>openViewer(u,cap);el.appendChild(b)}
+}
+function renderMidia(t){
+  const fs=fotosDaViagem(t);
+  if(fs.length)fillGrid($("mdFotos"),fs);else $("mdFotos").innerHTML=`<div class="empty" style="grid-column:1/-1"><b>Sem fotos</b>Adicione fotos nas paradas.</div>`;
+  const vids=(t.videos||[]).map(v=>({...v,own:true}));
+  (t.paradas||[]).forEach(s=>{if(safeURL(s.video))vids.push({id:"s-"+s.id,titulo:s.nome||tipo(s.tipo).nome,url:s.video,is360:false,paradaId:s.id,own:false})});
+  $("vidList").innerHTML=vids.length?vids.map(v=>{const s=v.paradaId?(t.paradas||[]).find(x=>x.id===v.paradaId):null;const u=safeURL(v.url);
+    return`<div class="vid"><span class="ic">${v.is360?"360°":"▶"}</span><span class="t"><b>${esc(v.titulo)}</b><small>${v.own?"":"link da parada · "}${s?esc(s.nome||tipo(s.tipo).nome):"viagem inteira"}</small></span>
+    ${u?`<a class="btn btn-sm" href="${esc(u)}" target="_blank" rel="noopener">Abrir</a>`:""}${v.own?`<button class="btn btn-sm btn-ghost" type="button" data-vid="${v.id}">Editar</button>`:""}</div>`}).join("")
+    :`<div class="empty"><b>Nenhum vídeo</b>Cole o link dos vídeos da GoPro desta viagem.</div>`;
+  $("vidList").querySelectorAll("[data-vid]").forEach(b=>b.onclick=()=>openVidSheet(b.dataset.vid));
+  const ps=DB.posts.filter(x=>x.viagemId===t.id).sort(postSort);
+  $("tripPosts").innerHTML=ps.length?ps.map(postRow).join(""):`<div class="empty"><b>Nada postado desta viagem</b>Registre as ideias e os posts aqui.</div>`;
+  bindPostRows($("tripPosts"));
+}
+$("artOpen").onclick=()=>{artTripId=curId;artFoto=null;go("arte")};
+$("vidAdd").onclick=()=>openVidSheet(null);
+$("tripPostAdd").onclick=()=>openPostSheet({viagemId:curId});
+
+/* --- vídeos --- */
+let editVid=null,vdDelArm=false;
+function openVidSheet(id){
+  const t=cur();vdDelArm=false;const v=id?(t.videos||[]).find(x=>x.id===id):null;
+  editVid=v?{...v}:{id:uid("vd"),titulo:"",url:"",is360:true,paradaId:null,_novo:true};
+  $("shVidT").textContent=v?"Editar vídeo":"Novo vídeo";$("vdTit").value=editVid.titulo;$("vdUrl").value=editVid.url;$("vd360").checked=!!editVid.is360;
+  $("vdStop").innerHTML=`<option value="">Viagem inteira</option>`+sortedStops(t).map((s,i)=>`<option value="${s.id}"${s.id===editVid.paradaId?" selected":""}>${i+1} · ${esc(s.nome||tipo(s.tipo).nome)}</option>`).join("");
+  $("vdDelRow").hidden=!v;$("vdDel").textContent="Apagar vídeo";openSheet("shVid");
+}
+$("fVid").addEventListener("submit",e=>{
+  e.preventDefault();const t=cur();const url=safeURL($("vdUrl").value.trim());
+  if(!url){toast("Cole um link que comece com https://");$("vdUrl").focus();return}
+  const v={id:editVid.id,titulo:$("vdTit").value.trim()||"Vídeo",url,is360:$("vd360").checked,paradaId:$("vdStop").value||null};
+  t.videos=t.videos||[];const i=t.videos.findIndex(x=>x.id===v.id);if(i>=0)t.videos[i]=v;else t.videos.push(v);
+  if(!save())return;closeSheet("shVid");toast("Vídeo salvo.");renderTrip();
+});
+$("vdDel").onclick=()=>{if(!vdDelArm){vdDelArm=true;$("vdDel").textContent="Toque de novo pra apagar";return}
+  const t=cur();t.videos=(t.videos||[]).filter(x=>x.id!==editVid.id);save();closeSheet("shVid");toast("Vídeo apagado.");renderTrip()};
+
+/* ================= galeria ================= */
+let galTrip="",galTipo="todos";
+function renderGaleria(){
+  const vs=reais().sort(sortTrips);
+  $("galTrip").innerHTML=`<option value="">Todas as viagens</option>`+vs.map(v=>`<option value="${v.id}"${v.id===galTrip?" selected":""}>${esc(v.nome)}</option>`).join("");
+  $("galTipo").innerHTML=[["todos","Todos"],...TIPOS.map(t=>[t.id,t.nome])].map(([id,n])=>`<button type="button" class="chip" aria-pressed="${galTipo===id}" data-gt="${id}">${n}</button>`).join("");
+  $("galTipo").querySelectorAll("[data-gt]").forEach(b=>b.onclick=()=>{galTipo=b.dataset.gt;renderGaleria()});
+  const items=vs.filter(v=>!galTrip||v.id===galTrip).flatMap(fotosDaViagem).filter(x=>galTipo==="todos"||x.s.tipo===galTipo);
+  $("galCount").textContent=`${items.length} foto${items.length===1?"":"s"}`;
+  if(items.length)fillGrid($("galGrid"),items);else $("galGrid").innerHTML=`<div class="empty" style="grid-column:1/-1"><b>Nenhuma foto</b>As fotos que vocês colocam nas paradas aparecem aqui.</div>`;
+}
+$("galTrip").addEventListener("change",()=>{galTrip=$("galTrip").value;renderGaleria()});
+
+/* ================= postagens ================= */
+const REDES=[{id:"instagram",nome:"Instagram",sig:"IG",cor:"#C13584"},{id:"estradax",nome:"Estrada X",sig:"EX",cor:"#0E5C46"},{id:"outro",nome:"Outra",sig:"•",cor:"#6B7470"}];
+const STATUS=[{id:"ideia",nome:"Ideia",cls:"none"},{id:"produzindo",nome:"Produzindo",cls:"warn"},{id:"postado",nome:"Postado",cls:"ok"}];
+const rede=id=>REDES.find(r=>r.id===id)||REDES[2];const stt=id=>STATUS.find(x=>x.id===id)||STATUS[0];
+function postSort(a,b){const o={produzindo:0,ideia:1,postado:2};return(o[a.status]-o[b.status])||(b.data||"").localeCompare(a.data||"")}
+function postRow(p){const r=rede(p.rede),st=stt(p.status),v=p.viagemId?DB.viagens.find(x=>x.id===p.viagemId):null;
+  const det=[p.formato,p.serie,v?v.nome:"",p.data?fmtData(p.data):"",p.views?fmtKm(p.views)+" views":""].filter(Boolean).join(" · ");
+  return`<button type="button" class="post" data-post="${p.id}"><span class="rd" style="background:${r.cor}">${r.sig}</span><span class="t"><b>${esc(p.titulo)}</b><small>${esc(det)}</small></span><span class="badge ${st.cls}">${st.nome}</span></button>`}
+function bindPostRows(el){el.querySelectorAll("[data-post]").forEach(b=>b.onclick=()=>openPostSheet({id:b.dataset.post}))}
+let pStatus="todos",pRede="todas";
+function renderPosts(){
+  const all=DB.posts;const viewsEX=all.filter(p=>p.rede==="estradax").reduce((a,p)=>a+(+p.views||0),0);
+  $("postStats").innerHTML=statBox(all.filter(p=>p.status==="postado").length,"postadas")+statBox(all.filter(p=>p.status==="produzindo").length,"produzindo")+statBox(all.filter(p=>p.status==="ideia").length,"ideias")+statBox(fmtKm(viewsEX),"views Estrada X");
+  $("postStatus").innerHTML=[["todos","Todas"],...STATUS.map(x=>[x.id,x.nome])].map(([id,n])=>`<button type="button" class="chip" aria-pressed="${pStatus===id}" data-ps="${id}">${n}</button>`).join("");
+  $("postStatus").querySelectorAll("[data-ps]").forEach(b=>b.onclick=()=>{pStatus=b.dataset.ps;renderPosts()});
+  $("postRede").innerHTML=[["todas","Todas as redes"],...REDES.map(x=>[x.id,x.nome])].map(([id,n])=>`<button type="button" class="chip" aria-pressed="${pRede===id}" data-pr="${id}">${n}</button>`).join("");
+  $("postRede").querySelectorAll("[data-pr]").forEach(b=>b.onclick=()=>{pRede=b.dataset.pr;renderPosts()});
+  const list=all.filter(p=>(pStatus==="todos"||p.status===pStatus)&&(pRede==="todas"||p.rede===pRede)).sort(postSort);
+  $("postList").innerHTML=list.length?list.map(postRow).join(""):`<div class="empty"><b>Nenhuma postagem ${all.length?"nesse filtro":"ainda"}</b>Toque em "+ Postagem" pra registrar uma ideia ou um post feito.</div>`;
+  bindPostRows($("postList"));
+  /* sugestões: favoritos e monumentos sem post */
+  const used=new Set(DB.posts.map(p=>p.paradaId).filter(Boolean));const ideas=[];
+  reais().forEach(v=>(v.paradas||[]).forEach(s=>{if((s.fav||s.tipo==="monumento")&&!used.has(s.id))ideas.push({v,s})}));
+  $("postIdeasBox").hidden=!ideas.length;
+  $("postIdeas").innerHTML=ideas.slice(0,8).map(({v,s})=>{const tp=tipo(s.tipo);return`<div class="vid"><span class="ic" style="background:${tp.cor};color:#fff">${s.tipo==="monumento"?"★":"♥"}</span><span class="t"><b>${esc(s.nome||tp.nome)}</b><small>${esc(tp.nome)} · ${esc(v.nome)}</small></span><button class="btn btn-sm" type="button" data-idea="${v.id}|${s.id}">+ Post</button></div>`}).join("");
+  $("postIdeas").querySelectorAll("[data-idea]").forEach(b=>b.onclick=()=>{const[vid,sid]=b.dataset.idea.split("|");const v=DB.viagens.find(x=>x.id===vid);const s=v.paradas.find(x=>x.id===sid);
+    openPostSheet({viagemId:vid,paradaId:sid,titulo:s.nome||tipo(s.tipo).nome,serie:s.tipo==="monumento"?"Rota Biker":"Viagem"})});
+}
+$("postAdd").onclick=()=>openPostSheet({});
+let editPost=null,poDelArm=false;
+function openPostSheet(o){
+  poDelArm=false;const p=o.id?DB.posts.find(x=>x.id===o.id):null;
+  editPost=p?{...p}:{id:uid("po"),titulo:o.titulo||"",rede:"instagram",status:"ideia",formato:"Carrossel",data:todayISO(),viagemId:o.viagemId||null,paradaId:o.paradaId||null,link:"",views:null,serie:o.serie||"",obs:"",_novo:true};
+  $("shPostT").textContent=p?"Editar postagem":"Nova postagem";
+  $("poTit").value=editPost.titulo;$("poFmt").value=editPost.formato;$("poData").value=editPost.data||"";$("poLink").value=editPost.link||"";
+  $("poViews").value=editPost.views!=null?String(editPost.views):"";$("poSerie").value=editPost.serie||"";$("poObs").value=editPost.obs||"";
+  $("poTrip").innerHTML=`<option value="">Nenhuma</option>`+reais().sort(sortTrips).map(v=>`<option value="${v.id}"${v.id===editPost.viagemId?" selected":""}>${esc(v.nome)}</option>`).join("");
+  fillPostStops();renderPostChips();$("poDelRow").hidden=!p;$("poDel").textContent="Apagar postagem";openSheet("shPost");
+}
+function fillPostStops(){const v=DB.viagens.find(x=>x.id===$("poTrip").value);
+  $("poStop").innerHTML=`<option value="">Viagem inteira / nenhuma</option>`+(v?sortedStops(v).map((s,i)=>`<option value="${s.id}"${s.id===editPost.paradaId?" selected":""}>${i+1} · ${esc(s.nome||tipo(s.tipo).nome)}</option>`).join(""):"");
+  $("poStop").closest("label").hidden=!v}
+$("poTrip").addEventListener("change",()=>{editPost.paradaId=null;fillPostStops()});
+function renderPostChips(){
+  $("poRede").innerHTML=REDES.map(r=>`<button type="button" class="chip" aria-pressed="${editPost.rede===r.id}" data-r="${r.id}">${r.nome}</button>`).join("");
+  $("poRede").querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{editPost.rede=b.dataset.r;renderPostChips()});
+  $("poStatus").innerHTML=STATUS.map(x=>`<button type="button" class="chip" aria-pressed="${editPost.status===x.id}" data-st="${x.id}">${x.nome}</button>`).join("");
+  $("poStatus").querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{editPost.status=b.dataset.st;renderPostChips()});
+}
+$("fPost").addEventListener("submit",e=>{
+  e.preventDefault();const titulo=$("poTit").value.trim();if(!titulo)return;
+  const link=$("poLink").value.trim();const vw=num($("poViews").value);
+  const p={id:editPost.id,titulo,rede:editPost.rede,status:editPost.status,formato:$("poFmt").value,data:$("poData").value,viagemId:$("poTrip").value||null,paradaId:$("poStop").value||null,
+    link:link?(safeURL(link)||""):"",views:vw!=null?Math.round(vw):null,serie:$("poSerie").value,obs:$("poObs").value.trim()};
+  if(link&&!p.link){toast("O link precisa começar com https://");return}
+  const i=DB.posts.findIndex(x=>x.id===p.id);if(i>=0)DB.posts[i]=p;else DB.posts.push(p);
+  if(!save())return;closeSheet("shPost");toast(editPost._novo?"Postagem registrada.":"Postagem atualizada.");render();
+});
+$("poDel").onclick=()=>{if(!poDelArm){poDelArm=true;$("poDel").textContent="Toque de novo pra apagar";return}
+  DB.posts=DB.posts.filter(x=>x.id!==editPost.id);save();closeSheet("shPost");toast("Postagem apagada.");render()};
+
+/* ================= imagem pra postar ================= */
+let artTripId=null,artFoto=null,artFmt="story",artShow={alt:true,gasto:false,paradas:true};
+let logoImg=null;
+function loadLogo(){return new Promise(res=>{if(logoImg)return res(logoImg);const i=new Image();i.onload=()=>{logoImg=i;res(i)};i.onerror=()=>res(null);i.src="assets/icon-512.png"})}
+function loadImg(u){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=u})}
+$("artBack").onclick=()=>{curId=artTripId;go("viagem")};
+async function renderArte(){
+  const t=DB.viagens.find(v=>v.id===artTripId);if(!t){go("viagens");return}
+  $("artFmt").innerHTML=[["story","Story 9:16"],["feed","Feed 4:5"]].map(([id,n])=>`<button type="button" class="chip" aria-pressed="${artFmt===id}" data-af="${id}">${n}</button>`).join("");
+  $("artFmt").querySelectorAll("[data-af]").forEach(b=>b.onclick=()=>{artFmt=b.dataset.af;renderArte()});
+  const st=tripStats(t);
+  const opts=[["paradas","Paradas no mapa"],["gasto","Mostrar gasto"]];if(st&&st.temE)opts.unshift(["alt","Altitude máx."]);
+  $("artOpts").innerHTML=opts.map(([id,n])=>`<button type="button" class="chip" aria-pressed="${!!artShow[id]}" data-ao="${id}">${n}</button>`).join("");
+  $("artOpts").querySelectorAll("[data-ao]").forEach(b=>b.onclick=()=>{artShow[b.dataset.ao]=!artShow[b.dataset.ao];renderArte()});
+  const fs=fotosDaViagem(t);const box=$("artFotos");box.innerHTML="";
+  const none=document.createElement("button");none.type="button";none.textContent="Sem foto";none.setAttribute("aria-pressed",String(!artFoto));none.onclick=()=>{artFoto=null;renderArte()};box.appendChild(none);
+  for(const it of fs){const u=await fotoURL(it.f);if(!u)continue;const b=document.createElement("button");b.type="button";b.setAttribute("aria-pressed",String(artFoto===it.f));b.setAttribute("aria-label","Usar foto de fundo");
+    const im=document.createElement("img");im.src=u;im.alt="";b.appendChild(im);b.onclick=()=>{artFoto=it.f;renderArte()};box.appendChild(b)}
+  await drawArte(t);
+}
+function rrect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function wrap(c,txt,max){const ws=String(txt).split(/\s+/);const lines=[];let l="";for(const w of ws){const tst=l?l+" "+w:w;if(c.measureText(tst).width>max&&l){lines.push(l);l=w}else l=tst}if(l)lines.push(l);return lines}
+async function drawArte(t){
+  try{await document.fonts.ready}catch(e){}
+  const cv=$("artCanvas");const W=1080,H=artFmt==="story"?1920:1350;cv.width=W;cv.height=H;const c=cv.getContext("2d");
+  const F=(w,sz,mono)=>`${w} ${sz}px ${mono?'"Overpass Mono", ui-monospace, monospace':'"Overpass", "Arial Narrow", sans-serif'}`;
+  /* fundo */
+  const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0B4A39");g.addColorStop(1,"#0F171D");c.fillStyle=g;c.fillRect(0,0,W,H);
+  if(artFoto){const u=await fotoURL(artFoto);const im=u?await loadImg(u):null;
+    if(im){const sc=Math.max(W/im.naturalWidth,H/im.naturalHeight);const iw=im.naturalWidth*sc,ih=im.naturalHeight*sc;c.drawImage(im,(W-iw)/2,(H-ih)/2,iw,ih);
+      const ov=c.createLinearGradient(0,0,0,H);ov.addColorStop(0,"rgba(8,14,12,.82)");ov.addColorStop(.45,"rgba(8,14,12,.45)");ov.addColorStop(1,"rgba(8,14,12,.9)");c.fillStyle=ov;c.fillRect(0,0,W,H)}}
+  const M=64;
+  /* placa do topo */
+  c.fillStyle="#0E5C46";rrect(c,M,M,W-2*M,170,22);c.fill();c.strokeStyle="#F7F7F2";c.lineWidth=5;rrect(c,M+14,M+14,W-2*M-28,142,14);c.stroke();
+  const lg=await loadLogo();if(lg){c.save();c.beginPath();c.arc(M+100,M+85,58,0,Math.PI*2);c.clip();c.drawImage(lg,M+42,M+27,116,116);c.restore()}
+  c.fillStyle="#F7F7F2";c.font=F(900,50);c.textBaseline="alphabetic";c.fillText("DIÁRIO DE ESTRADA",M+186,M+92);
+  c.font=F(600,32);c.fillText("Fernweh Riders · P&D",M+188,M+136);
+  /* título */
+  let y=M+170+90;c.font=F(900,artFmt==="story"?84:72);c.fillStyle="#FFFFFF";
+  const tl=wrap(c,t.nome,W-2*M).slice(0,3);tl.forEach(l=>{c.fillText(l,M,y);y+=artFmt==="story"?92:80});
+  c.font=F(700,36,true);c.fillStyle="#F2C230";c.fillText(fmtPeriodo(t.inicio,t.fim).toUpperCase(),M,y+4);y+=40;
+  /* rota */
+  const statsH=artFmt==="story"?300:250,footH=110;const top=y+30,bottom=H-statsH-footH;const pts=[];
+  (t.segs||[]).forEach(s=>s.forEach(p=>pts.push(p)));(t.paradas||[]).forEach(s=>{if(s.lat!=null)pts.push([s.lat,s.lon])});
+  if(pts.length>1&&bottom-top>200){
+    let la0=90,la1=-90,lo0=180,lo1=-180;pts.forEach(([a,o])=>{la0=Math.min(la0,a);la1=Math.max(la1,a);lo0=Math.min(lo0,o);lo1=Math.max(lo1,o)});
+    const kx=Math.cos((la0+la1)/2*Math.PI/180);const bw=W-2*M-120,bh=bottom-top-120;const sx=Math.max((lo1-lo0)*kx,1e-4),sy=Math.max(la1-la0,1e-4);
+    const sc=Math.min(bw/sx,bh/sy);const cx=W/2,cy=(top+bottom)/2,mx=(lo0+lo1)/2,my=(la0+la1)/2;
+    const X=o=>cx+(o-mx)*kx*sc,Y=a=>cy-(a-my)*sc;
+    const seg=(s,col,w)=>{c.beginPath();s.forEach((p,i)=>i?c.lineTo(X(p[1]),Y(p[0])):c.moveTo(X(p[1]),Y(p[0])));c.strokeStyle=col;c.lineWidth=w;c.lineCap="round";c.lineJoin="round";c.stroke()};
+    (t.segs||[]).forEach(s=>seg(s,"#0B0F12",22));(t.segs||[]).forEach(s=>seg(s,"#F2C230",12));
+    if(t.segs&&t.segs.length){const f=t.segs[0][0],l=t.segs[t.segs.length-1];const L2=l[l.length-1];
+      c.fillStyle="#1F7A4D";c.strokeStyle="#fff";c.lineWidth=6;c.beginPath();c.arc(X(f[1]),Y(f[0]),16,0,7);c.fill();c.stroke();
+      c.fillStyle="#fff";c.strokeStyle="#0B0F12";c.beginPath();c.arc(X(L2[1]),Y(L2[0]),16,0,7);c.fill();c.stroke()}
+    if(artShow.paradas)sortedStops(t).forEach((s,i)=>{if(s.lat==null)return;const px=X(s.lon),py=Y(s.lat);
+      c.fillStyle=tipo(s.tipo).cor;c.strokeStyle="#fff";c.lineWidth=5;c.beginPath();c.arc(px,py-34,26,0,7);c.fill();c.stroke();
+      c.beginPath();c.moveTo(px-12,py-14);c.lineTo(px,py);c.lineTo(px+12,py-14);c.fill();
+      c.fillStyle="#fff";c.font=F(700,28,true);c.textAlign="center";c.fillText(String(i+1),px,py-24);c.textAlign="left"});
+  }
+  /* números em placas */
+  const st=tripStats(t);const km=tripKm(t);const boxes=[[fmtKm(km),"KM"],[String(dias(t)||"–"),dias(t)===1?"DIA":"DIAS"],[String((t.paradas||[]).length),"PARADAS"]];
+  if(artShow.alt&&st&&st.temE)boxes.push([fmtKm(st.eMax)+" m","ALT. MÁX."]);
+  if(artShow.gasto){const gt=totalGastos(gastosDaViagem(t));if(gt)boxes.push([fmtR0(gt),"GASTO"])}
+  const n=boxes.length,gap=18,bwid=(W-2*M-gap*(n-1))/n,bh2=artFmt==="story"?190:170,by=H-footH-statsH+(statsH-bh2)/2;
+  boxes.forEach(([v,l],i)=>{const bx=M+i*(bwid+gap);c.fillStyle="#0E5C46";rrect(c,bx,by,bwid,bh2,18);c.fill();c.strokeStyle="#F7F7F2";c.lineWidth=4;rrect(c,bx+10,by+10,bwid-20,bh2-20,10);c.stroke();
+    c.fillStyle="#F7F7F2";c.textAlign="center";let fs=n>4?52:64;c.font=F(700,fs,true);while(c.measureText(v).width>bwid-36&&fs>28){fs-=4;c.font=F(700,fs,true)}
+    c.fillText(v,bx+bwid/2,by+bh2/2+8);c.font=F(800,26);c.fillText(l,bx+bwid/2,by+bh2-36);c.textAlign="left"});
+  /* rodapé */
+  c.fillStyle="rgba(247,247,242,.9)";c.font=F(700,30);c.textAlign="center";c.fillText("@fernweh_riders  ·  Estrada X @namotojuntospd",W/2,H-56);c.textAlign="left";
+}
+function artBlob(){return new Promise(res=>$("artCanvas").toBlob(b=>res(b),"image/png"))}
+function artName(){const t=DB.viagens.find(v=>v.id===artTripId);return`fernweh-${(t?t.nome:"viagem").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}-${artFmt}.png`}
+$("artSave").onclick=async()=>{const b=await artBlob();if(!b){toast("Não consegui gerar a imagem.");return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=artName();document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);toast("Imagem salva em Downloads.")};
+$("artShare").onclick=async()=>{const b=await artBlob();if(!b){toast("Não consegui gerar a imagem.");return}
+  const f=new File([b],artName(),{type:"image/png"});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:"Fernweh Riders"})}catch(e){if(e&&e.name!=="AbortError")toast("Não deu pra compartilhar. Use Baixar imagem.")}}
+  else{toast("Este navegador não compartilha arquivos. Baixando a imagem…");$("artSave").click()}};
+
 /* visualizador de foto */
-function openViewer(u){$("viewerImg").src=u;$("viewer").hidden=false}
+function openViewer(u,cap){$("viewerImg").src=u;$("viewerCap").textContent=cap||"";$("viewer").hidden=false}
 $("viewerClose").onclick=()=>$("viewer").hidden=true;
 $("viewer").onclick=e=>{if(e.target===$("viewer"))$("viewer").hidden=true};
 
@@ -1648,7 +1977,7 @@ $("btnExport").onclick=async()=>{
   const fotos={};
   for(const v of DB.viagens)for(const s of v.paradas||[])for(const f of s.fotos||[]){try{const b=await fotoGet(f);if(b)fotos[f]=await blobToDataURL(b)}catch(e){}}
   DB.ultimoBackup=new Date().toISOString();
-  const pack={app:"diario-fernweh-riders",versao:3,exportadoEm:DB.ultimoBackup,viagens:DB.viagens,gastos:DB.gastos,itens:DB.itens,moto:DB.moto,monumentos:DB.monumentos,fotos};
+  const pack={app:"diario-fernweh-riders",versao:4,exportadoEm:DB.ultimoBackup,viagens:DB.viagens,gastos:DB.gastos,itens:DB.itens,moto:DB.moto,monumentos:DB.monumentos,posts:DB.posts,fotos};
   const blob=new Blob([JSON.stringify(pack)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`diario-fernweh-${todayISO()}.json`;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
@@ -1673,6 +2002,7 @@ async function doImport(replace){
   mergeById(DB.viagens,d.viagens);mergeById(DB.gastos,d.gastos);
   if(!replace&&Array.isArray(d.itens))mergeById(DB.itens,d.itens);
   if(!replace&&Array.isArray(d.monumentos))mergeById(DB.monumentos,d.monumentos);
+  mergeById(DB.posts,d.posts);
   if(!replace&&d.moto){if(d.moto.odo!=null&&(DB.moto.odo==null||d.moto.odo>DB.moto.odo)){DB.moto.odo=d.moto.odo;DB.moto.odoData=d.moto.odoData}}
   for(const[id,du]of Object.entries(d.fotos||{})){try{await fotoPut(id,await dataURLToBlob(du))}catch(e){}}
   urlCache.clear();save();pendingImport=null;$("impConfirm").hidden=true;toast(`${d.viagens.length} viagens importadas.`);renderBackup();
