@@ -5,7 +5,7 @@ Projeto pessoal, feito por hobby.
 
 **App:** https://fernwehridersmc.github.io/RiderMC/
 
-## O que faz (versão 2)
+## O que faz (versão 3)
 - Importa um ou vários arquivos GPX (viagem de vários dias = vários GPX numa viagem só)
 - Mostra a rota no mapa (OpenStreetMap) e calcula km e datas
 - Paradas: toca no mapa (ou usa o GPS do celular), escolhe o tipo (posto, comida, ponto turístico, monumento, pernoite), escreve a observação, põe fotos e o link do vídeo
@@ -18,6 +18,10 @@ Projeto pessoal, feito por hobby.
 - Resumo do ano: km por mês, gasto por categoria e recordes
 - Mapa geral com filtro por ano e por tipo de parada; botão "Ir com Waze" em cada parada
 - Recebe GPX pelo "Compartilhar" do Android (com o app instalado na tela inicial)
+- Estatísticas do GPX: tempo rodando, tempo total, média, máxima, altitude, subida acumulada, km por dia e perfil de altitude
+- Lugares favoritos ("vale voltar") com Waze
+- Rota Biker: lista dos monumentos, visitados e faltando, ligação com a parada do tipo monumento, camada no mapa
+- Planejar viagem: roteiro de destinos (abre no Google Maps), checklist de bagagem e "Começar viagem"
 - Backup: exporta e importa um arquivo `.json` com tudo, fotos incluídas (lê também backups da versão 1)
 
 ## Onde ficam os dados

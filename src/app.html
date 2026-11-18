@@ -220,6 +220,29 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
 .meter i{display:block;height:100%;background:var(--sign)}
 .menu{display:flex;flex-direction:column;gap:8px}
 .menu .item svg{flex-shrink:0;color:var(--sign-text)}
+.star{color:#E0A800;font-weight:900}
+.prog{height:12px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--stripe)}
+.mon{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.mon .n{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;border:3px solid var(--line);color:var(--muted)}
+.mon.ok .n{background:var(--sign);border-color:var(--sign);color:var(--sign-ink)}
+.mon .t{min-width:0;display:flex;flex-direction:column;gap:6px}
+.mon .t small{color:var(--muted)}
+.monpin{width:22px;height:22px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font:700 10px/1 var(--mono);color:#fff}
+.chk{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);min-height:50px}
+.chk input{width:24px;height:24px;accent-color:var(--sign);flex-shrink:0}
+.chk span{flex:1;min-width:0}
+.chk.done span{color:var(--muted);text-decoration:line-through}
+.chk button{background:none;border:0;color:var(--muted);min-width:40px;min-height:40px;cursor:pointer;font-size:18px}
+.dest{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.dest .k{width:30px;height:30px;border-radius:50%;background:var(--fg);color:var(--bg);display:flex;align-items:center;justify-content:center;font:700 13px/1 var(--mono);flex-shrink:0}
+.dest .t{flex:1;min-width:0}
+.dest .t small{display:block;color:var(--muted);font-size:13px}
+.dest button{background:none;border:1px solid var(--line);border-radius:8px;min-width:40px;min-height:40px;cursor:pointer;color:var(--fg)}
+.planbadge{display:inline-flex;align-items:center;min-height:24px;padding:0 10px;border-radius:999px;background:var(--stripe);color:#1A1A12;font-size:12px;font-weight:900;letter-spacing:.6px}
+.daykm{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
+.daykm:last-child{border-bottom:0}
+.daykm b{font-family:var(--mono)}
 @media (prefers-reduced-motion:no-preference){.sheet .panel{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
 </style>
 </head>
@@ -254,6 +277,7 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
       </div>
     </div>
     <div class="list" id="homeAlerts"></div>
+    <div class="list" id="homeExtra"></div>
     <div class="quick">
       <label class="btn file-btn" for="gpxQuick">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar GPX
@@ -279,6 +303,9 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
       </label>
       <button class="btn grow" type="button" id="btnManual">Viagem sem GPX</button>
     </div>
+    <button class="btn" type="button" id="btnPlan">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      Planejar uma viagem</button>
     <p class="note">Viagem de mais de um dia? Escolha os GPX de todos os dias de uma vez que eles viram uma viagem só.</p>
     <input type="text" id="tripSearch" placeholder="Buscar viagem…" aria-label="Buscar viagem">
     <div class="list" id="allTrips"></div>
@@ -295,24 +322,15 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
       <div class="tag" id="vDatas"></div>
       <h3 id="vNome"></h3>
     </div>
-    <div class="stats s4">
-      <div class="stat"><b id="vKm">0</b><span>km</span></div>
-      <div class="stat"><b id="vDias">–</b><span>dias</span></div>
-      <div class="stat"><b id="vGasto">R$ 0</b><span>gasto</span></div>
-      <div class="stat"><b id="vRkm">–</b><span>R$ por km</span></div>
-    </div>
+    <div class="stats s4" id="vStats"></div>
     <div class="map-wrap">
       <div class="map tall" id="mapTrip" role="region" aria-label="Mapa da viagem"></div>
       <div class="map-banner" id="placeBanner" hidden>
-        <span>Toque no mapa onde vocês pararam</span>
+        <span id="placeTxt">Toque no mapa onde vocês pararam</span>
         <button class="btn btn-sm" type="button" id="placeCancel">Cancelar</button>
       </div>
     </div>
-    <div class="seg" role="tablist" aria-label="Partes da viagem">
-      <button type="button" role="tab" data-vt="paradas" aria-selected="true">Paradas</button>
-      <button type="button" role="tab" data-vt="gastos" aria-selected="false">Gastos</button>
-      <button type="button" role="tab" data-vt="info" aria-selected="false">Notas e GPX</button>
-    </div>
+    <div class="seg" role="tablist" aria-label="Partes da viagem" id="vSeg"></div>
 
     <div id="vt-paradas" class="section">
       <button class="btn btn-sign" type="button" id="btnStop">
@@ -331,13 +349,34 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
       <div class="list" id="vGastoList"></div>
     </div>
 
-    <div id="vt-info" class="section" hidden>
-      <div class="card"><div class="notes" id="vNotas"></div></div>
-      <div class="stats s2">
-        <div class="stat"><b id="vParadas">0</b><span>paradas</span></div>
-        <div class="stat"><b id="vTrechos">0</b><span>trechos GPX</span></div>
-      </div>
+    <div id="vt-estrada" class="section" hidden>
+      <div class="stats s2" id="vEst"></div>
+      <div class="card section" id="vDiasBox"><h2>Km por dia</h2><div id="vDiasList"></div></div>
+      <div class="card section" id="vProfBox"><h2>Perfil de altitude</h2><div id="vProf"></div></div>
+      <p class="note" id="vEstNote"></p>
+      <div class="card section"><h2>Notas da viagem</h2><div class="notes" id="vNotas"></div></div>
       <label class="btn file-btn" for="gpxAdd">+ Adicionar GPX de outro dia<input id="gpxAdd" type="file" multiple></label>
+    </div>
+
+    <div id="vt-roteiro" class="section" hidden>
+      <p class="note">Monte o roteiro: toque em "Adicionar destino" e depois no mapa. A ordem da lista é a ordem da viagem.</p>
+      <div class="list" id="destList"></div>
+      <div class="row">
+        <button class="btn grow" type="button" id="destAdd">+ Adicionar destino no mapa</button>
+        <button class="btn grow" type="button" id="destMon">+ Monumento da Rota Biker</button>
+      </div>
+      <a class="btn" id="gmapsLink" href="#" target="_blank" rel="noopener">Abrir o roteiro no Google Maps</a>
+      <div class="card section">
+        <b>A viagem aconteceu?</b>
+        <p class="note">Transforma em viagem de verdade: aí dá pra importar o GPX, marcar paradas e lançar gastos. O roteiro e a bagagem ficam guardados.</p>
+        <button class="btn btn-sign" type="button" id="planStart">Começar viagem</button>
+      </div>
+    </div>
+
+    <div id="vt-bagagem" class="section" hidden>
+      <div class="row"><span class="grow note" id="bagProg"></span><button class="btn btn-sm btn-ghost" type="button" id="bagReset">Desmarcar tudo</button></div>
+      <div class="list" id="bagList"></div>
+      <form class="row" id="bagForm"><input type="text" id="bagNew" placeholder="Adicionar item…" aria-label="Novo item da bagagem" class="grow" style="flex:1"><button class="btn" type="submit">Adicionar</button></form>
     </div>
   </section>
 
@@ -346,6 +385,7 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
     <h2 id="t-mapa">Mapa de todas as viagens</h2>
     <div class="years" id="mapYears" role="group" aria-label="Filtrar por ano"></div>
     <div class="years" id="mapTypes" role="group" aria-label="Filtrar paradas por tipo"></div>
+    <div class="years" id="mapLayers" role="group" aria-label="Camadas extras"></div>
     <div class="map full" id="mapGlobal" role="region" aria-label="Mapa com todas as rotas e paradas"></div>
     <p class="note" id="mapCount"></p>
   </section>
@@ -391,6 +431,12 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
       <button class="item" type="button" data-go="resumo">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>
         <span class="t"><b>Resumo do ano</b><small>Km por mês, gastos, recordes</small></span></button>
+      <button class="item" type="button" data-go="rota">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 15.4 6.7 18.4l1.2-6L3.4 8.3l6-.7z"/></svg>
+        <span class="t"><b>Rota Biker</b><small id="maisRota">Monumentos visitados e os que faltam</small></span></button>
+      <button class="item" type="button" data-go="favoritos">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><path d="M12 6.5l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z"/></svg>
+        <span class="t"><b>Lugares favoritos</b><small>Paradas marcadas como "vale voltar"</small></span></button>
       <button class="item" type="button" data-go="gastos">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg>
         <span class="t"><b>Todos os gastos</b><small>Viagens, moto e avulsos</small></span></button>
@@ -428,6 +474,32 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
     <div class="years" id="gYears" role="group" aria-label="Filtrar por ano"></div>
     <div class="card"><div class="row"><span class="grow note">Total no período</span><b class="num" id="gTotal">R$ 0</b></div></div>
     <div class="list" id="gList"></div>
+  </section>
+
+  <!-- ================= ROTA BIKER ================= -->
+  <section class="screen" id="scr-rota" hidden aria-labelledby="t-rota">
+    <div class="row"><button class="back" type="button" data-go="mais"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Mais</button></div>
+    <h3 id="t-rota">Rota Biker</h3>
+    <div class="card section">
+      <div class="row"><b class="grow" id="rbProg">0 de 0 monumentos</b><span class="num" id="rbPct">0%</span></div>
+      <div class="prog" aria-hidden="true"><i id="rbBar" style="width:0%"></i></div>
+      <p class="note">Lista montada a partir da relação pública dos Monumentos Bikers (o Paraná oficializou 7 deles na Lei 23.472/2026). Os nomes mudam de vez em quando: confira no passaporte e edite o que precisar. A posição no mapa é o centro da cidade até vocês visitarem.</p>
+    </div>
+    <div class="years" id="rbFilter" role="group" aria-label="Filtrar monumentos"></div>
+    <div class="list" id="rbList"></div>
+    <div class="row">
+      <button class="btn grow" type="button" id="rbAdd">+ Monumento que não está na lista</button>
+      <button class="btn grow" type="button" id="rbMap">Ver no mapa</button>
+    </div>
+  </section>
+
+  <!-- ================= FAVORITOS ================= -->
+  <section class="screen" id="scr-favoritos" hidden aria-labelledby="t-fav">
+    <div class="row"><button class="back" type="button" data-go="mais"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Mais</button></div>
+    <h3 id="t-fav">Lugares favoritos</h3>
+    <p class="note">Toda parada marcada com "Vale voltar" aparece aqui, com o Waze a um toque.</p>
+    <div class="years" id="favFilter" role="group" aria-label="Filtrar por tipo"></div>
+    <div class="list" id="favList"></div>
   </section>
 
   <!-- ================= BACKUP ================= -->
@@ -498,7 +570,9 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
     <h3 id="shStopT">Parada</h3>
     <form class="f" id="fStop">
       <div class="full"><div class="types" id="sTypes" role="group" aria-label="Tipo de parada"></div></div>
+      <label class="full" for="sMon" id="sMonLbl">Qual monumento da Rota Biker?<select id="sMon"></select></label>
       <label class="full" for="sNome">Nome do lugar<input id="sNome" type="text" placeholder="Ex.: Posto Graal, Monumento do Motociclista"></label>
+      <label class="full check" for="sFav"><input id="sFav" type="checkbox"><span><span class="star">★</span> Vale voltar (vai pros favoritos)</span></label>
       <label for="sData">Dia<input id="sData" type="date"></label>
       <label for="sHora">Hora<input id="sHora" type="time"></label>
       <label class="full" for="sObs">Observação<textarea id="sObs" placeholder="O que comeram, preço, se vale voltar…"></textarea></label>
@@ -592,6 +666,49 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
   </div>
 </div>
 
+<!-- folha: monumento -->
+<div class="sheet" id="shMon" hidden role="dialog" aria-modal="true" aria-labelledby="shMonT">
+  <div class="panel">
+    <div class="grab"></div>
+    <h3 id="shMonT">Monumento</h3>
+    <form class="f" id="fMon">
+      <label for="mnNum">Número<input id="mnNum" type="text" inputmode="numeric" placeholder="Ex.: 13"></label>
+      <label for="mnUf">Estado<input id="mnUf" type="text" maxlength="3" placeholder="PR"></label>
+      <label class="full" for="mnNome">Nome<input id="mnNome" type="text" required placeholder="Ex.: Rota 513"></label>
+      <label class="full" for="mnCidade">Cidade<input id="mnCidade" type="text" placeholder="Ex.: Ponta Grossa"></label>
+      <label class="full check" for="mnVis"><input id="mnVis" type="checkbox">Já visitamos</label>
+      <label for="mnData">Data da visita<input id="mnData" type="date"></label>
+      <label class="check" for="mnCarimbo" style="align-self:end"><input id="mnCarimbo" type="checkbox">Carimbamos o passaporte</label>
+      <label class="full" for="mnObs">Observação<textarea id="mnObs" placeholder="Como foi, o que tem lá…"></textarea></label>
+      <div class="full section" style="gap:6px">
+        <span class="loc" id="mnLoc"></span>
+        <button class="btn btn-sm" type="button" id="mnGps" style="align-self:flex-start">Estou aqui agora (usar GPS)</button>
+      </div>
+      <div class="full row">
+        <button class="btn btn-sign grow" type="submit">Salvar</button>
+        <button class="btn" type="button" data-close>Cancelar</button>
+      </div>
+      <div class="full row" id="mnDelRow"><button class="btn btn-danger btn-sm" type="button" id="mnDel">Tirar da lista</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- folha: destino do roteiro -->
+<div class="sheet" id="shDest" hidden role="dialog" aria-modal="true" aria-labelledby="shDestT">
+  <div class="panel">
+    <div class="grab"></div>
+    <h3 id="shDestT">Destino</h3>
+    <form class="f" id="fDest">
+      <label class="full" for="dNome">Nome do destino<input id="dNome" type="text" required placeholder="Ex.: Serra do Rio do Rastro"></label>
+      <label class="full" for="dMonSel" id="dMonLbl">Monumento<select id="dMonSel"></select></label>
+      <div class="full row">
+        <button class="btn btn-sign grow" type="submit">Salvar destino</button>
+        <button class="btn" type="button" data-close>Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="viewer" id="viewer" hidden><img id="viewerImg" alt="Foto da parada"><button class="btn" type="button" id="viewerClose">Fechar</button></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -622,6 +739,41 @@ const CATS=[
   {id:"outros",nome:"Outros",cor:"#6B7470"}
 ];
 const cat=id=>CATS.find(c=>c.id===id)||CATS[5];
+const CASA=[-26.2295,-52.6716]; /* Pato Branco */
+/* Monumentos Bikers: relação pública (motociclistasunidos.com.br) + os 7 da Lei PR 23.472/2026.
+   Posição = centro aproximado da cidade (aprox:true) até a visita. */
+const DEFAULT_MON=[
+ [1,"Serpenteando Café","Bocaiúva do Sul","PR",-25.206,-49.115],
+ [2,"Fábrica Cafeteria / Panda Mechanics","Curitiba","PR",-25.429,-49.271],
+ [3,"Mirante do 12","Lauro Müller","SC",-28.393,-49.397],
+ [4,"Rota 370","Urubici","SC",-28.015,-49.592],
+ [5,"Parada Rota PR-218","Carlópolis","PR",-23.426,-49.722],
+ [6,"Rota Bike Café","Rio dos Cedros","SC",-26.738,-49.273],
+ [7,"Container da Serra","Doutor Pedrinho","SC",-26.716,-49.483],
+ [8,"Parada 261","Guapiara","SP",-24.185,-48.532],
+ [9,"Posto Rota 090","Piraí do Sul","PR",-24.526,-49.946],
+ [10,"Terra Sul Motos","Jaguarão","RS",-32.566,-53.377],
+ [11,"Pad Bier Cervejaria","Brasília","DF",-15.794,-47.882],
+ [12,"Centro Cultural Movimento","Socorro","SP",-22.591,-46.529],
+ [13,"Rota 513 (Camping e Cabanas Portal dos Campos)","Ponta Grossa","PR",-25.095,-50.162],
+ [14,"Parador 158","Itaara","RS",-29.601,-53.765],
+ [15,"Garimpo em Atividade","Ametista do Sul","RS",-27.360,-53.183],
+ [17,"Pit Stop Canastra","Vargem Bonita","MG",-20.333,-46.367],
+ [18,"Box 1200","Jundiaí","SP",-23.186,-46.884],
+ [19,"Rancho Terra Crua","Salesópolis","SP",-23.532,-45.846],
+ [21,"Penhasco Cervejaria","Penha","SC",-26.770,-48.646],
+ [22,"Restaurante Mata Virgem","Três Corações","MG",-21.692,-45.255],
+ [23,"Bar do Hélio","Santo Antônio da Alegria","SP",-21.087,-47.151],
+ [24,"Poço do Caixão","Timbé do Sul","SC",-28.829,-49.842],
+ [25,"Parque do Peão","Barretos","SP",-20.557,-48.568],
+ [26,"Restaurante Portal Grill","Porto União","SC",-26.238,-51.078],
+ [27,"Restaurante Pedra do Baú","São Bento do Sapucaí","SP",-22.689,-45.731],
+ [28,"Hotel Barra Bonita","Barra Bonita","SP",-22.495,-48.558],
+ [30,"Drei Schritte Restô Bar","Katueté","PY",-24.247,-54.757],
+ [32,"Hell's Dogs Motorcycle Bar","Foz do Iguaçu","PR",-25.516,-54.585],
+ [null,"Pro Tork","Siqueira Campos","PR",-23.689,-49.834]
+];
+const DEFAULT_BAG=["CNH e documento da moto (CRLV)","Capacetes e intercomunicador","Capas de chuva (2)","Luvas e jaquetas","Kit de ferramentas","Kit de primeiros socorros e remédios","Carregador, cabo e power bank","Suporte do celular","GoPro, baterias e cartões","Lubrificante de corrente","Trava de disco / cadeado","Protetor solar","Roupas (por dia)","Passaporte da Rota Biker","Dinheiro trocado pro pedágio"];
 const DEFAULT_ITENS=[
   {nome:"Troca de óleo do motor",km:1500,meses:6},
   {nome:"Lubrificar e ajustar corrente",km:500,meses:0},
@@ -634,12 +786,14 @@ const DEFAULT_ITENS=[
 
 /* ================= dados ================= */
 let DB={};
-function fresh(){return{versao:2,viagens:[],gastos:[],itens:DEFAULT_ITENS.map(i=>({id:uid("m"),...i,ultKm:null,ultData:""})),moto:{nome:"Master Ride",placa:"",tanque:null,odo:null,odoData:""},ultimoBackup:null}}
+function defaultMon(){return DEFAULT_MON.map(([n,nome,cidade,uf,lat,lon])=>({id:uid("rb"),num:n,nome,cidade,uf,lat,lon,aprox:true,visitado:false,data:"",carimbo:false,obs:"",parada:null}))}
+function fresh(){return{versao:3,viagens:[],gastos:[],itens:DEFAULT_ITENS.map(i=>({id:uid("m"),...i,ultKm:null,ultData:""})),moto:{nome:"Master Ride",placa:"",tanque:null,odo:null,odoData:""},monumentos:defaultMon(),ultimoBackup:null}}
 function normalize(d){
   const f=fresh();
   d=d&&typeof d==="object"?d:{};
-  return{versao:2,viagens:Array.isArray(d.viagens)?d.viagens:[],gastos:Array.isArray(d.gastos)?d.gastos:[],
-    itens:Array.isArray(d.itens)?d.itens:f.itens,moto:Object.assign(f.moto,d.moto||{}),ultimoBackup:d.ultimoBackup||null};
+  return{versao:3,viagens:Array.isArray(d.viagens)?d.viagens:[],gastos:Array.isArray(d.gastos)?d.gastos:[],
+    itens:Array.isArray(d.itens)?d.itens:f.itens,moto:Object.assign(f.moto,d.moto||{}),
+    monumentos:Array.isArray(d.monumentos)?d.monumentos:f.monumentos,ultimoBackup:d.ultimoBackup||null};
 }
 function load(){try{const r=localStorage.getItem(KEY);DB=normalize(r?JSON.parse(r):null)}catch(e){DB=normalize(null)}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));return true}catch(e){toast("Não deu pra salvar: o espaço deste app no celular encheu. Exporte um backup.");return false}}
@@ -671,6 +825,10 @@ function fmtPeriodo(a,b){if(!a)return"Sem data";const[y1,m1,d1]=a.split("-");if(
 function dias(t){if(!t.inicio)return 0;const a=new Date(t.inicio+"T12:00"),b=new Date((t.fim||t.inicio)+"T12:00");return Math.max(1,Math.round((b-a)/864e5)+1)}
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ano=t=>(t.inicio||"").slice(0,4)||"Sem data";
+const reais=()=>DB.viagens.filter(v=>!v.planejada);
+const planejadas=()=>DB.viagens.filter(v=>v.planejada);
+function fmtDur(sec){if(!sec)return"–";const h=Math.floor(sec/3600),m=Math.round((sec%3600)/60);return h?`${h}h${String(m).padStart(2,"0")}`:`${m} min`}
+function distLabel(lat,lon){if(lat==null)return"";const d=hav(CASA,[lat,lon]);return`${fmtKm(d)} km de casa (linha reta)`}
 function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,3600)}
 function localISO(dt){return dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0")}
 const todayISO=()=>localISO(new Date());
@@ -727,16 +885,54 @@ function parseGPX(text,fname){
   const xml=new DOMParser().parseFromString(text,"application/xml");
   if(xml.getElementsByTagName("parsererror").length)throw new Error(`"${fname}" não é um GPX válido.`);
   const tag=(el,n)=>el.getElementsByTagNameNS("*",n);
-  const segs=[];let times=[];
-  const grab=list=>{const pts=[];for(const p of list){const la=+p.getAttribute("lat"),lo=+p.getAttribute("lon");if(!isFinite(la)||!isFinite(lo))continue;pts.push([la,lo]);const tm=tag(p,"time")[0];if(tm&&tm.textContent)times.push(tm.textContent.trim())}return pts};
-  for(const s of tag(xml,"trkseg")){const pts=grab(tag(s,"trkpt"));if(pts.length>1)segs.push(pts)}
-  if(!segs.length)for(const r of tag(xml,"rte")){const pts=grab(tag(r,"rtept"));if(pts.length>1)segs.push(pts)}
-  if(!segs.length)throw new Error(`"${fname}" não tem trajeto gravado (só pontos soltos).`);
+  const raw=[];
+  const grab=list=>{const pts=[];for(const p of list){const la=+p.getAttribute("lat"),lo=+p.getAttribute("lon");if(!isFinite(la)||!isFinite(lo))continue;
+    const e=tag(p,"ele")[0],tm=tag(p,"time")[0];const ele=e?parseFloat(e.textContent):NaN;const t=tm?Date.parse(tm.textContent.trim()):NaN;
+    pts.push({la,lo,ele:isFinite(ele)?ele:null,t:isFinite(t)?t:null})}return pts};
+  for(const s of tag(xml,"trkseg")){const pts=grab(tag(s,"trkpt"));if(pts.length>1)raw.push(pts)}
+  if(!raw.length)for(const r of tag(xml,"rte")){const pts=grab(tag(r,"rtept"));if(pts.length>1)raw.push(pts)}
+  if(!raw.length)throw new Error(`"${fname}" não tem trajeto gravado (só pontos soltos).`);
+  const segs=raw.map(s=>s.map(p=>[p.la,p.lo]));
+  let times=raw.flat().map(p=>p.t).filter(t=>t!=null);
   const nm=tag(xml,"trk")[0]?tag(tag(xml,"trk")[0],"name")[0]:null;
   const nm2=tag(xml,"metadata")[0]?tag(tag(xml,"metadata")[0],"name")[0]:null;
   const name=(nm&&nm.textContent.trim())||(nm2&&nm2.textContent.trim())||fname.replace(/\.gpx$/i,"");
-  times=times.map(t=>new Date(t)).filter(d=>!isNaN(d)).sort((a,b)=>a-b);
-  return{name,segs:segs.map(s=>simplify(s).map(p=>[+p[0].toFixed(5),+p[1].toFixed(5)])),ini:times[0]?localISO(times[0]):"",fim:times.length?localISO(times[times.length-1]):""};
+  times=times.map(t=>new Date(t)).sort((a,b)=>a-b);
+  return{name,segs:segs.map(s=>simplify(s).map(p=>[+p[0].toFixed(5),+p[1].toFixed(5)])),stats:gpxStats(raw),ini:times[0]?localISO(times[0]):"",fim:times.length?localISO(times[times.length-1]):""};
+}
+/* estatísticas a partir dos pontos completos (antes de simplificar) */
+function gpxStats(raw){
+  let km=0,mov=0,movKm=0,tot=0,vmax=0,eMax=null,eMin=null,gain=0,loss=0;const dias={};const prof=[];let temT=false,temE=false;
+  for(const s of raw){
+    let ref=null;let accKm=km;
+    for(let i=0;i<s.length;i++){const p=s[i];
+      if(p.ele!=null){temE=true;eMax=eMax==null?p.ele:Math.max(eMax,p.ele);eMin=eMin==null?p.ele:Math.min(eMin,p.ele);
+        if(ref==null)ref=p.ele;else if(p.ele-ref>=4){gain+=p.ele-ref;ref=p.ele}else if(ref-p.ele>=4){loss+=ref-p.ele;ref=p.ele}}
+      if(i>0){const q=s[i-1];const d=hav([q.la,q.lo],[p.la,p.lo]);accKm+=d;
+        const dia=p.t!=null?localISO(new Date(p.t)):"";if(dia)dias[dia]=(dias[dia]||0)+d;
+        if(p.t!=null&&q.t!=null){temT=true;const dt=(p.t-q.t)/1000;if(dt>0&&dt<10800)tot+=dt;if(dt>0&&dt<600){const v=d/dt*3600;if(v>4){mov+=dt;movKm+=d}}}}
+      if(p.ele!=null)prof.push([accKm,p.ele]);
+    }
+    /* máxima: média em janelas de pelo menos 20 s, pra não pegar pulo do GPS */
+    let j=0;for(let i=0;i<s.length;i++){if(s[i].t==null)continue;if(j<i)j=i;let d=0;let k=i;
+      while(k+1<s.length&&s[k+1].t!=null&&s[k+1].t-s[i].t<=20000){d+=hav([s[k].la,s[k].lo],[s[k+1].la,s[k+1].lo]);k++}
+      if(k+1<s.length&&s[k+1].t!=null){d+=hav([s[k].la,s[k].lo],[s[k+1].la,s[k+1].lo]);k++;const dt=(s[k].t-s[i].t)/1000;if(dt>=15&&dt<120){const v=d/dt*3600;if(v<250)vmax=Math.max(vmax,v)}}}
+    km=accKm;
+  }
+  return{km,mov:Math.round(mov),movKm,tot:Math.round(tot),vmax,eMax,eMin,gain:Math.round(gain),loss:Math.round(loss),dias,prof:resample(prof,240),temT,temE};
+}
+function resample(prof,n){if(prof.length<=n)return prof.map(p=>[+p[0].toFixed(2),Math.round(p[1])]);const out=[];const last=prof[prof.length-1][0];let j=0;
+  for(let i=0;i<n;i++){const x=last*i/(n-1);while(j<prof.length-1&&prof[j+1][0]<x)j++;
+    let mx=prof[j][1];/* mantém o pico do trecho */let k=j;while(k<prof.length&&prof[k][0]<=x+last/n){mx=Math.max(mx,prof[k][1]);k++}
+    out.push([+x.toFixed(2),Math.round(mx)])}return out}
+function tripStats(t){
+  const g=t.gpx||[];if(!g.length)return null;
+  const o={km:0,mov:0,movKm:0,tot:0,vmax:0,eMax:null,eMin:null,gain:0,loss:0,dias:{},prof:[],temT:false,temE:false};
+  for(const s of g){o.mov+=s.mov;o.movKm+=s.movKm;o.tot+=s.tot;o.vmax=Math.max(o.vmax,s.vmax);o.gain+=s.gain;o.loss+=s.loss;
+    if(s.eMax!=null)o.eMax=o.eMax==null?s.eMax:Math.max(o.eMax,s.eMax);if(s.eMin!=null)o.eMin=o.eMin==null?s.eMin:Math.min(o.eMin,s.eMin);
+    for(const[d,k]of Object.entries(s.dias||{}))o.dias[d]=(o.dias[d]||0)+k;
+    const off=o.km;(s.prof||[]).forEach(p=>o.prof.push([p[0]+off,p[1]]));o.km+=s.km;o.temT=o.temT||s.temT;o.temE=o.temE||s.temE}
+  o.prof=resample(o.prof,300);return o;
 }
 async function readGPXFiles(files){
   const res=[],errs=[];
@@ -749,7 +945,7 @@ async function importNewTrip(files){
   const gs=await readGPXFiles(files);if(!gs.length)return;
   gs.sort((a,b)=>(a.ini||"").localeCompare(b.ini||""));
   const all=gs.map(g=>[g.ini,g.fim]).flat().filter(Boolean).sort();
-  const t={id:uid("v"),nome:gs[0].name,inicio:all[0]||"",fim:all[all.length-1]||"",notas:"",cor:nextColor(),segs:gs.flatMap(g=>g.segs),kmManual:null,paradas:[],criado:Date.now()};
+  const t={id:uid("v"),nome:gs[0].name,inicio:all[0]||"",fim:all[all.length-1]||"",notas:"",cor:nextColor(),segs:gs.flatMap(g=>g.segs),gpx:gs.map(g=>g.stats),kmManual:null,paradas:[],criado:Date.now()};
   DB.viagens.push(t);if(!save())return;
   toast(`Viagem importada: ${fmtKm(tripKm(t))} km`);
   openTrip(t.id);
@@ -758,7 +954,7 @@ async function importNewTrip(files){
 $("gpxAdd").addEventListener("change",async e=>{
   const files=[...e.target.files];e.target.value="";const t=cur();if(!t||!files.length)return;
   const gs=await readGPXFiles(files);if(!gs.length)return;
-  t.segs=(t.segs||[]).concat(gs.flatMap(g=>g.segs));
+  t.segs=(t.segs||[]).concat(gs.flatMap(g=>g.segs));t.gpx=(t.gpx||[]).concat(gs.map(g=>g.stats));
   for(const g of gs){if(g.ini){const ds=[t.inicio,t.fim,g.ini,g.fim].filter(Boolean).sort();t.inicio=ds[0];t.fim=ds[ds.length-1]}}
   recomputeStopKm(t);save();toast(`Trecho adicionado. Total: ${fmtKm(tripKm(t))} km`);renderTrip();
 });
@@ -786,8 +982,8 @@ function recomputeStopKm(t){(t.paradas||[]).forEach(s=>{if(s.lat!=null){s.km=sna
 
 /* ================= navegação ================= */
 let screen="inicio",curId=null,vTab="paradas";
-const SCREENS=["inicio","viagens","viagem","mapa","moto","mais","resumo","gastos","backup"];
-const TAB_OF={viagem:"viagens",resumo:"mais",gastos:"mais",backup:"mais"};
+const SCREENS=["inicio","viagens","viagem","mapa","moto","mais","resumo","gastos","backup","rota","favoritos"];
+const TAB_OF={viagem:"viagens",resumo:"mais",gastos:"mais",backup:"mais",rota:"mais",favoritos:"mais"};
 const cur=()=>DB.viagens.find(v=>v.id===curId);
 function go(s){
   screen=s;
@@ -808,10 +1004,12 @@ function render(){
   if(s==="resumo")renderResumo();
   if(s==="gastos")renderAllGastos();
   if(s==="backup")renderBackup();
+  if(s==="rota")renderRota();
+  if(s==="favoritos")renderFav();
   updateMotoDot();
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)go(b.dataset.go)});
-function openTrip(id){curId=id;vTab="paradas";go("viagem")}
+function openTrip(id){curId=id;const t=DB.viagens.find(v=>v.id===id);vTab=t&&t.planejada?"roteiro":"paradas";go("viagem")}
 $("vBack").onclick=()=>go("viagens");
 
 /* ================= mapas ================= */
@@ -831,7 +1029,7 @@ function stopIcon(s,n){const c=tipo(s.tipo).cor;return L.divIcon({className:"",h
 function wazeURL(lat,lon){return`https://waze.com/ul?ll=${lat},${lon}&navigate=yes`}
 
 /* ================= início ================= */
-function years(){return[...new Set(DB.viagens.map(ano).concat(DB.gastos.map(g=>(g.data||"").slice(0,4))))].filter(y=>/^\d{4}$/.test(y)).sort().reverse()}
+function years(){return[...new Set(reais().map(ano).concat(DB.gastos.map(g=>(g.data||"").slice(0,4))))].filter(y=>/^\d{4}$/.test(y)).sort().reverse()}
 function sortTrips(a,b){return(b.inicio||"").localeCompare(a.inicio||"")||(b.criado||0)-(a.criado||0)}
 function tripRow(v){const n=(v.paradas||[]).length;const g=totalGastos(gastosDaViagem(v));
   return`<button type="button" class="trip" data-id="${v.id}"><span class="sw" style="background:${v.cor}"></span><span class="t"><b>${esc(v.nome)}</b><small>${esc(fmtPeriodo(v.inicio,v.fim))} · ${n} parada${n===1?"":"s"}${g?" · "+fmtR0(g):""}${v.segs&&v.segs.length?"":" · sem rota"}</small></span><span class="km">${fmtKm(tripKm(v))} km</span></button>`}
@@ -839,7 +1037,7 @@ function emptyTrips(){return`<div class="empty"><b>Nenhuma viagem ainda</b>Toque
 function bindRows(el){el.querySelectorAll(".trip").forEach(b=>b.onclick=()=>openTrip(b.dataset.id))}
 function renderHome(){
   const y=thisYear();$("hYear").textContent=y;
-  const vs=DB.viagens.filter(v=>ano(v)===y);
+  const vs=reais().filter(v=>ano(v)===y);
   $("hKm").textContent=fmtKm(vs.reduce((a,v)=>a+tripKm(v),0));
   $("hTrips").textContent=vs.length;
   $("hDays").textContent=vs.reduce((a,v)=>a+dias(v),0);
@@ -853,7 +1051,15 @@ function renderHome(){
   const diasBk=DB.ultimoBackup?Math.floor((Date.now()-new Date(DB.ultimoBackup))/864e5):null;
   if(temDados&&(diasBk==null||diasBk>30))al.push(`<button type="button" class="alert warn" data-go="backup"><span class="badge warn">Backup</span><span class="grow"><b>${diasBk==null?"Você ainda não fez nenhum backup":"Último backup há "+diasBk+" dias"}</b><small>Toque pra exportar e guardar no Drive</small></span></button>`);
   $("homeAlerts").innerHTML=al.join("");
-  const rec=[...DB.viagens].sort(sortTrips).slice(0,3);
+  const ex=[];
+  const prox=planejadas().filter(v=>v.inicio&&v.inicio>=todayISO()).sort((a,b)=>a.inicio.localeCompare(b.inicio))[0]||planejadas()[0];
+  if(prox){const dd=prox.inicio?Math.round((new Date(prox.inicio+"T12:00")-new Date(todayISO()+"T12:00"))/864e5):null;const bag=prox.checklist||[];const ok=bag.filter(b=>b.ok).length;
+    ex.push(`<button type="button" class="alert" data-trip="${prox.id}"><span class="planbadge">PRÓXIMA</span><span class="grow"><b>${esc(prox.nome)}</b><small>${dd!=null?(dd>0?`em ${dd} dia${dd===1?"":"s"}`:dd===0?"é hoje!":"data passou"):"sem data"} · bagagem ${ok}/${bag.length}</small></span></button>`)}
+  const ms=DB.monumentos,mv=ms.filter(m=>m.visitado).length;
+  if(ms.length)ex.push(`<button type="button" class="alert" data-go="rota"><span class="badge ok">${mv}/${ms.length}</span><span class="grow"><b>Rota Biker</b><small>${mv?`${mv} monumento${mv===1?"":"s"} visitado${mv===1?"":"s"}`:"Nenhum marcado ainda"} · faltam ${ms.length-mv}</small><span class="prog" style="display:block;margin-top:6px"><i style="width:${(mv/ms.length*100).toFixed(1)}%"></i></span></span></button>`);
+  $("homeExtra").innerHTML=ex.join("");
+  $("homeExtra").querySelectorAll("[data-trip]").forEach(b=>b.onclick=()=>openTrip(b.dataset.trip));
+  const rec=reais().sort(sortTrips).slice(0,3);
   $("recent").innerHTML=rec.length?rec.map(tripRow).join(""):emptyTrips();
   bindRows($("recent"));
 }
@@ -864,35 +1070,49 @@ $("qGasto").onclick=()=>openGastoSheet({cat:"comida"});
 $("tripSearch").addEventListener("input",()=>renderList());
 function renderList(){
   const q=$("tripSearch").value.trim().toLowerCase();
-  const vs=[...DB.viagens].sort(sortTrips).filter(v=>!q||(v.nome||"").toLowerCase().includes(q)||(v.paradas||[]).some(s=>(s.nome||"").toLowerCase().includes(q)));
+  const vs=reais().sort(sortTrips).filter(v=>!q||(v.nome||"").toLowerCase().includes(q)||(v.paradas||[]).some(s=>(s.nome||"").toLowerCase().includes(q)));
   if(!DB.viagens.length){$("allTrips").innerHTML=emptyTrips();return}
-  if(!vs.length){$("allTrips").innerHTML=`<div class="empty"><b>Nada encontrado</b>Tente outro nome de viagem ou de parada.</div>`;return}
+  if(!vs.length&&!planejadas().length){$("allTrips").innerHTML=`<div class="empty"><b>Nada encontrado</b>Tente outro nome de viagem ou de parada.</div>`;return}
   let html="",lastY=null;
+  const pl=planejadas().filter(v=>!q||(v.nome||"").toLowerCase().includes(q)).sort((a,b)=>(a.inicio||"9").localeCompare(b.inicio||"9"));
+  if(pl.length){html+=`<div class="yearhead">Planejadas</div>`+pl.map(v=>`<button type="button" class="trip" data-id="${v.id}"><span class="sw" style="background:repeating-linear-gradient(180deg,${v.cor} 0 6px,transparent 6px 10px)"></span><span class="t"><b>${esc(v.nome)}</b><small>${esc(v.inicio?fmtPeriodo(v.inicio,v.fim):"Sem data")} · ${(v.destinos||[]).length} destino${(v.destinos||[]).length===1?"":"s"}</small></span><span class="planbadge">PLANO</span></button>`).join("")}
   vs.forEach(v=>{const y=ano(v);if(y!==lastY){html+=`<div class="yearhead">${y}</div>`;lastY=y}html+=tripRow(v)});
   $("allTrips").innerHTML=html;bindRows($("allTrips"));
 }
 $("btnManual").onclick=()=>openTripSheet(null);
+$("btnPlan").onclick=()=>openTripSheet(null,true);
 
 /* ================= detalhe da viagem ================= */
 function sortedStops(t){return[...(t.paradas||[])].sort((a,b)=>{const ka=a.km??1e9,kb=b.km??1e9;if(ka!==kb)return ka-kb;return((a.data||"")+(a.hora||"")).localeCompare((b.data||"")+(b.hora||""))||a.criado-b.criado})}
-document.querySelectorAll("[data-vt]").forEach(b=>b.onclick=()=>{vTab=b.dataset.vt;renderTripTabs()});
+const VTABS={real:[["paradas","Paradas"],["gastos","Gastos"],["estrada","Estrada"]],plano:[["roteiro","Roteiro"],["bagagem","Bagagem"],["gastos","Gastos"]]};
 function renderTripTabs(){
-  document.querySelectorAll("[data-vt]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.vt===vTab)));
-  ["paradas","gastos","info"].forEach(n=>$("vt-"+n).hidden=n!==vTab);
+  const t=cur();const tabs=VTABS[t&&t.planejada?"plano":"real"];
+  if(!tabs.some(x=>x[0]===vTab))vTab=tabs[0][0];
+  $("vSeg").innerHTML=tabs.map(([id,n])=>`<button type="button" role="tab" data-vt="${id}" aria-selected="${id===vTab}">${n}</button>`).join("");
+  $("vSeg").querySelectorAll("[data-vt]").forEach(b=>b.onclick=()=>{vTab=b.dataset.vt;renderTripTabs()});
+  ["paradas","gastos","estrada","roteiro","bagagem"].forEach(n=>$("vt-"+n).hidden=n!==vTab);
 }
+function statBox(v,l){return`<div class="stat"><b>${v}</b><span>${l}</span></div>`}
 function renderTrip(){
   const t=cur();if(!t){go("viagens");return}
   const km=tripKm(t),gs=gastosDaViagem(t),gt=totalGastos(gs);
-  $("vNome").textContent=t.nome;$("vDatas").textContent=fmtPeriodo(t.inicio,t.fim);
-  $("vKm").textContent=fmtKm(km);$("vDias").textContent=dias(t)||"–";
-  $("vGasto").textContent=fmtR0(gt);$("vRkm").textContent=km>0&&gt>0?fmtR(gt/km):"–";
-  $("vParadas").textContent=(t.paradas||[]).length;$("vTrechos").textContent=(t.segs||[]).length;
+  $("vNome").textContent=t.nome;
+  $("vDatas").innerHTML=(t.planejada?`<span class="planbadge">PLANEJADA</span> `:"")+esc(t.inicio?fmtPeriodo(t.inicio,t.fim):"Sem data");
+  $("btnStop").hidden=!!t.planejada;
+  if(t.planejada){const kp=destKm(t),bag=t.checklist||[];
+    $("vStats").innerHTML=statBox(kp?"~"+fmtKm(kp):"–","km em linha reta")+statBox(dias(t)||"–","dias")+statBox((t.destinos||[]).length,"destinos")+statBox(`${bag.filter(b=>b.ok).length}/${bag.length}`,"bagagem pronta")}
+  else $("vStats").innerHTML=statBox(fmtKm(km),"km")+statBox(dias(t)||"–","dias")+statBox(fmtR0(gt),"gasto")+statBox(km>0&&gt>0?fmtR(gt/km):"–","R$ por km");
   $("vNotas").textContent=t.notas||"Sem notas. Toque em Editar pra escrever como foi a viagem.";
   if(!mapTrip){mapTrip=mkMap($("mapTrip"));layTrip=L.layerGroup().addTo(mapTrip);mapTrip.on("click",onMapPlace)}
   setTimeout(()=>mapTrip.invalidateSize(),0);
   layTrip.clearLayers();
   drawRoute(layTrip,t.segs||[],t.cor,{w:5});
   const pts=[];(t.segs||[]).forEach(s=>s.forEach(p=>pts.push(p)));
+  const ds=(t.destinos||[]).filter(d=>d.lat!=null);
+  if(ds.length){const line=(t.planejada?[CASA]:[]).concat(ds.map(d=>[d.lat,d.lon]));
+    if(!(t.segs&&t.segs.length))L.polyline(line,{color:t.cor,weight:4,dashArray:"8 8",opacity:.95}).addTo(layTrip);
+    ds.forEach((d,i)=>{pts.push([d.lat,d.lon]);L.marker([d.lat,d.lon],{icon:L.divIcon({className:"",html:`<div class="monpin" style="background:#1A1A12">${i+1}</div>`,iconSize:[22,22],iconAnchor:[11,11]}),title:d.nome}).addTo(layTrip)});
+    if(t.planejada){pts.push(CASA);L.marker(CASA,{icon:endIcon(true),interactive:false}).addTo(layTrip)}}
   if(t.segs&&t.segs.length){const f=t.segs[0][0],l=t.segs[t.segs.length-1];L.marker(f,{icon:endIcon(true),interactive:false}).addTo(layTrip);L.marker(l[l.length-1],{icon:endIcon(false),interactive:false}).addTo(layTrip)}
   const ss=sortedStops(t);
   ss.forEach((s,i)=>{if(s.lat==null)return;pts.push([s.lat,s.lon]);
@@ -901,6 +1121,7 @@ function renderTrip(){
   renderTripTabs();
   renderTimeline(t,ss);
   renderTripGastos(t,gs);
+  if(t.planejada){renderRoteiro(t);renderBagagem(t)}else renderEstrada(t);
 }
 async function renderTimeline(t,ss){
   const el=$("timeline");
@@ -908,7 +1129,7 @@ async function renderTimeline(t,ss){
   el.innerHTML=ss.map((s,i)=>{const tp=tipo(s.tipo);const v=safeURL(s.video);
     return`<div class="stop"><div class="marco" aria-label="${s.km!=null?"km "+fmtKm1(s.km):"parada "+(i+1)}"><small>${s.km!=null?"KM":"Nº"}</small><b>${s.km!=null?fmtKm1(s.km):i+1}</b></div>
     <div class="body"><span class="tag"><i style="background:${tp.cor}"></i>${i+1} · ${esc(tp.nome)}${s.data?" · "+esc(fmtData(s.data)):""}${s.hora?" "+esc(s.hora):""}</span>
-    <b>${esc(s.nome||tp.nome)}</b>${s.obs?`<div class="obs">${esc(s.obs)}</div>`:""}
+    <b>${s.fav?'<span class="star" aria-label="Favorito">★</span> ':""}${esc(s.nome||tp.nome)}</b>${s.obs?`<div class="obs">${esc(s.obs)}</div>`:""}
     ${(s.fotos||[]).length?`<div class="thumbs" data-fotos="${s.id}"></div>`:""}
     ${v?`<a class="link" href="${esc(v)}" target="_blank" rel="noopener">▶ Ver vídeo</a>`:""}
     <div class="row"><button class="btn btn-sm" type="button" data-edit="${s.id}">Editar</button>${s.tipo==="posto"?`<button class="btn btn-sm" type="button" data-fuel="${s.id}">+ Abastecimento</button>`:""}${s.lat!=null?`<button class="btn btn-sm btn-ghost" type="button" data-fly="${s.id}">Ver no mapa</button><a class="btn btn-sm btn-ghost" href="${wazeURL(s.lat,s.lon)}" target="_blank" rel="noopener">Ir com Waze</a>`:""}</div></div></div>`}).join("");
@@ -940,27 +1161,35 @@ $("vAddFuel").onclick=()=>{const t=cur();openGastoSheet({cat:"combustivel",viage
 $("btnEditTrip").onclick=()=>openTripSheet(curId);
 
 /* ================= mapa geral ================= */
-let gYear="todos",gTipos=new Set(TIPOS.map(t=>t.id));
+let gYear="todos",gTipos=new Set(TIPOS.map(t=>t.id)),gRota=false,gFav=false;
+function monIcon(m){return L.divIcon({className:"",html:`<div class="monpin" style="background:${m.visitado?"#1F7A4D":"#7A827D"}">${m.num??"★"}</div>`,iconSize:[22,22],iconAnchor:[11,11],popupAnchor:[0,-10]})}
 function renderGlobalMap(){
   const ys=years();
   $("mapYears").innerHTML=["todos",...ys].map(y=>`<button type="button" class="chip" aria-pressed="${y===gYear}" data-my="${y}">${y==="todos"?"Todos os anos":y}</button>`).join("");
   $("mapYears").querySelectorAll("[data-my]").forEach(b=>b.onclick=()=>{gYear=b.dataset.my;renderGlobalMap()});
   $("mapTypes").innerHTML=TIPOS.map(t=>`<button type="button" class="chip" aria-pressed="${gTipos.has(t.id)}" data-mt="${t.id}"><i style="background:${t.cor}"></i>${t.nome}</button>`).join("");
   $("mapTypes").querySelectorAll("[data-mt]").forEach(b=>b.onclick=()=>{const id=b.dataset.mt;gTipos.has(id)?gTipos.delete(id):gTipos.add(id);renderGlobalMap()});
+  $("mapLayers").innerHTML=`<button type="button" class="chip" aria-pressed="${gFav}" id="lyFav"><span class="star">★</span> Só favoritos</button><button type="button" class="chip" aria-pressed="${gRota}" id="lyRota">Monumentos Rota Biker</button>`;
+  $("lyFav").onclick=()=>{gFav=!gFav;renderGlobalMap()};$("lyRota").onclick=()=>{gRota=!gRota;renderGlobalMap()};
   if(!mapGlobal){mapGlobal=mkMap($("mapGlobal"));layGlobal=L.layerGroup().addTo(mapGlobal)}
   setTimeout(()=>mapGlobal.invalidateSize(),0);
   layGlobal.clearLayers();
-  const vs=DB.viagens.filter(v=>gYear==="todos"||ano(v)===gYear);const pts=[];let nStops=0;
+  const vs=reais().filter(v=>gYear==="todos"||ano(v)===gYear);const pts=[];let nStops=0;
   vs.forEach(v=>{
     drawRoute(layGlobal,v.segs||[],v.cor,{w:4}).forEach(l=>{l.bindTooltip(esc(v.nome),{sticky:true});l.on("click",()=>openTrip(v.id))});
     (v.segs||[]).forEach(s=>s.forEach(p=>pts.push(p)));
-    sortedStops(v).forEach((s,i)=>{if(s.lat==null||!gTipos.has(s.tipo))return;nStops++;pts.push([s.lat,s.lon]);
+    sortedStops(v).forEach((s,i)=>{if(s.lat==null||!gTipos.has(s.tipo)||(gFav&&!s.fav))return;nStops++;pts.push([s.lat,s.lon]);
       const m=L.marker([s.lat,s.lon],{icon:stopIcon(s,i+1)}).addTo(layGlobal);
       const div=document.createElement("div");
       div.innerHTML=`<b>${esc(s.nome||tipo(s.tipo).nome)}</b>${esc(tipo(s.tipo).nome)} · ${esc(v.nome)}<div class="row" style="margin-top:8px"><button class="btn btn-sm" type="button">Abrir viagem</button><a class="btn btn-sm" href="${wazeURL(s.lat,s.lon)}" target="_blank" rel="noopener">Waze</a></div>`;
       div.querySelector("button").onclick=()=>openTrip(v.id);
       m.bindPopup(div)})});
-  $("mapCount").textContent=vs.length?`${vs.length} viage${vs.length===1?"m":"ns"} · ${nStops} parada${nStops===1?"":"s"} no mapa. Toque numa rota pra abrir a viagem.`:"Nenhuma viagem nesse filtro.";
+  let nMon=0;
+  if(gRota)DB.monumentos.forEach(m=>{if(m.lat==null)return;nMon++;pts.push([m.lat,m.lon]);
+    const mk=L.marker([m.lat,m.lon],{icon:monIcon(m)}).addTo(layGlobal);const div=document.createElement("div");
+    div.innerHTML=`<b>${m.num!=null?m.num+" · ":""}${esc(m.nome)}</b>${esc(m.cidade)}${m.uf?"/"+esc(m.uf):""} · ${m.visitado?"visitado":"falta"}${m.aprox?"<br><small>posição aproximada (centro da cidade)</small>":""}<div class="row" style="margin-top:8px"><a class="btn btn-sm" href="${wazeURL(m.lat,m.lon)}" target="_blank" rel="noopener">Waze</a></div>`;
+    mk.bindPopup(div)});
+  $("mapCount").textContent=(gRota?`${nMon} monumentos no mapa (verde = visitado). `:"")+(vs.length?`${vs.length} viage${vs.length===1?"m":"ns"} · ${nStops} parada${nStops===1?"":"s"} no mapa. Toque numa rota pra abrir a viagem.`:"Nenhuma viagem nesse filtro.");
   if(pts.length){const bb=L.latLngBounds(pts);setTimeout(()=>mapGlobal.fitBounds(bb,{padding:[24,24],maxZoom:14}),30)}
 }
 
@@ -1004,7 +1233,7 @@ $("mEdit").onclick=()=>openMotoSheet(false);
 $("mOdoBtn").onclick=()=>openMotoSheet(true);
 
 /* ================= mais / resumo / gastos ================= */
-function renderMais(){$("maisBackup").textContent=DB.ultimoBackup?"Último: "+new Date(DB.ultimoBackup).toLocaleDateString("pt-BR"):"Nenhum backup feito ainda"}
+function renderMais(){const mv=DB.monumentos.filter(m=>m.visitado).length;$("maisRota").textContent=`${mv} de ${DB.monumentos.length} visitados`;$("maisBackup").textContent=DB.ultimoBackup?"Último: "+new Date(DB.ultimoBackup).toLocaleDateString("pt-BR"):"Nenhum backup feito ainda"}
 let rYear=null;
 function yearChips(el,sel,onPick,withAll){
   const ys=years();const list=(withAll?["todos"]:[]).concat(ys.length?ys:[thisYear()]);
@@ -1014,7 +1243,7 @@ function yearChips(el,sel,onPick,withAll){
 function renderResumo(){
   const ys=years();if(!rYear||!ys.includes(rYear))rYear=ys.includes(thisYear())?thisYear():(ys[0]||thisYear());
   yearChips($("resYears"),rYear,y=>{rYear=y;renderResumo()},false);
-  const vs=DB.viagens.filter(v=>ano(v)===rYear),gs=DB.gastos.filter(g=>(g.data||"").startsWith(rYear));
+  const vs=reais().filter(v=>ano(v)===rYear),gs=DB.gastos.filter(g=>(g.data||"").startsWith(rYear));
   const km=vs.reduce((a,v)=>a+tripKm(v),0),tot=totalGastos(gs),lit=gs.filter(g=>g.cat==="combustivel").reduce((a,g)=>a+(+g.litros||0),0);
   $("rKm").textContent=fmtKm(km);$("rTrips").textContent=vs.length;$("rDays").textContent=vs.reduce((a,v)=>a+dias(v),0);
   $("rStops").textContent=vs.reduce((a,v)=>a+(v.paradas||[]).length,0);$("rGasto").textContent=fmtR0(tot);
@@ -1054,23 +1283,25 @@ document.querySelectorAll(".sheet").forEach(sh=>{sh.addEventListener("click",e=>
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.querySelectorAll(".sheet:not([hidden])").forEach(s=>closeSheet(s.id));$("viewer").hidden=true}});
 
 /* --- viagem --- */
-let editTripId=null,delArm=false;
-function openTripSheet(id){
-  editTripId=id;delArm=false;const t=id?DB.viagens.find(v=>v.id===id):null;
-  $("shTripT").textContent=t?"Editar viagem":"Nova viagem sem GPX";
+let editTripId=null,delArm=false,newPlan=false;
+function openTripSheet(id,plano){
+  editTripId=id;delArm=false;newPlan=!!plano;const t=id?DB.viagens.find(v=>v.id===id):null;
+  $("shTripT").textContent=t?(t.planejada?"Editar plano":"Editar viagem"):(plano?"Planejar viagem":"Nova viagem sem GPX");
   $("tNome").value=t?t.nome:"";$("tIni").value=t?t.inicio||"":todayISO();$("tFim").value=t?t.fim||"":"";
   $("tKm").value=t&&t.kmManual!=null?String(t.kmManual).replace(".",","):"";$("tNotas").value=t?t.notas||"":"";
-  $("tKmLbl").hidden=!!(t&&t.segs&&t.segs.length);
+  $("tKmLbl").hidden=!!(t&&t.segs&&t.segs.length)||newPlan||!!(t&&t.planejada);
+  $("tNotas").placeholder=(newPlan||(t&&t.planejada))?"Ideias, onde dormir, o que não pode faltar…":"Como foi, clima, estrada, o que vale lembrar";
   $("tDelRow").hidden=!t;$("tDel").textContent="Apagar viagem";
   openSheet("shTrip");
 }
 $("fTrip").addEventListener("submit",e=>{
   e.preventDefault();const nome=$("tNome").value.trim();if(!nome)return;
   let t=editTripId?DB.viagens.find(v=>v.id===editTripId):null;
-  if(!t){t={id:uid("v"),nome,inicio:"",fim:"",notas:"",cor:nextColor(),segs:[],kmManual:null,paradas:[],criado:Date.now()};DB.viagens.push(t)}
+  if(!t){t={id:uid("v"),nome,inicio:"",fim:"",notas:"",cor:nextColor(),segs:[],kmManual:null,paradas:[],criado:Date.now()};
+    if(newPlan){t.planejada=true;t.destinos=[];t.checklist=DEFAULT_BAG.map(x=>({id:uid("b"),txt:x,ok:false}))}DB.viagens.push(t)}
   t.nome=nome;t.inicio=$("tIni").value;t.fim=$("tFim").value||t.inicio;if(t.fim&&t.inicio&&t.fim<t.inicio){const x=t.fim;t.fim=t.inicio;t.inicio=x}
   t.notas=$("tNotas").value.trim();if(!(t.segs&&t.segs.length))t.kmManual=num($("tKm").value);
-  if(!save())return;closeSheet("shTrip");toast("Viagem salva.");openTrip(t.id);
+  if(!save())return;closeSheet("shTrip");toast(t.planejada?"Plano salvo. Agora monte o roteiro.":"Viagem salva.");openTrip(t.id);
 });
 $("tDel").onclick=async()=>{
   if(!delArm){delArm=true;$("tDel").textContent="Toque de novo pra apagar de vez";return}
@@ -1084,7 +1315,13 @@ $("tDel").onclick=async()=>{
 let editStop=null,stopDelArm=false,placing=false,returnToSheet=false;
 function blankStop(){const t=cur();return{id:uid("p"),tipo:"posto",nome:"",obs:"",data:t&&t.inicio||todayISO(),hora:"",lat:null,lon:null,km:null,fotos:[],video:"",criado:Date.now(),_novo:true,_fotosNovas:[],_fotosRemover:[]}}
 function renderTypes(){$("sTypes").innerHTML=TIPOS.map(t=>`<button type="button" data-t="${t.id}" aria-pressed="${editStop.tipo===t.id}"><i style="background:${t.cor}"></i>${t.nome}</button>`).join("");
-  $("sTypes").querySelectorAll("button").forEach(b=>b.onclick=()=>{editStop.tipo=b.dataset.t;renderTypes()})}
+  $("sTypes").querySelectorAll("button").forEach(b=>b.onclick=()=>{editStop.tipo=b.dataset.t;renderTypes()});
+  $("sMonLbl").hidden=editStop.tipo!=="monumento"}
+function monLabel(m){return`${m.num!=null?m.num+" · ":""}${m.nome} — ${m.cidade}${m.uf?"/"+m.uf:""}`}
+function sortedMon(){return[...DB.monumentos].sort((a,b)=>(a.num??999)-(b.num??999)||a.nome.localeCompare(b.nome))}
+function fillMonSelect(){const cur=DB.monumentos.find(m=>m.parada&&m.parada.p===editStop.id);
+  $("sMon").innerHTML=`<option value="">Não é da Rota Biker</option>`+sortedMon().map(m=>`<option value="${m.id}"${cur&&cur.id===m.id?" selected":""}>${esc(monLabel(m))}${m.visitado&&!(cur&&cur.id===m.id)?" ✓":""}</option>`).join("")}
+$("sMon").addEventListener("change",()=>{const m=DB.monumentos.find(x=>x.id===$("sMon").value);if(m&&!$("sNome").value.trim())$("sNome").value=m.nome});
 function renderLoc(){const l=$("sLoc");if(editStop.lat==null){l.textContent="Sem localização no mapa";l.className="loc"}else{l.textContent=editStop.km!=null?`Marcada no mapa · km ${fmtKm1(editStop.km)} da viagem`:`Marcada no mapa (${editStop.lat.toFixed(4)}, ${editStop.lon.toFixed(4)})`;l.className="loc ok"}}
 async function renderStopThumbs(){
   const box=$("sThumbs");box.innerHTML="";
@@ -1097,22 +1334,26 @@ async function renderStopThumbs(){
 }
 function fillStopForm(){
   $("shStopT").textContent=editStop._novo?"Nova parada":"Editar parada";
-  $("sNome").value=editStop.nome;$("sObs").value=editStop.obs;$("sData").value=editStop.data||"";$("sHora").value=editStop.hora||"";$("sVideo").value=editStop.video||"";
+  $("sNome").value=editStop.nome;$("sObs").value=editStop.obs;$("sFav").checked=!!editStop.fav;
+  fillMonSelect();$("sData").value=editStop.data||"";$("sHora").value=editStop.hora||"";$("sVideo").value=editStop.video||"";
   $("sDelRow").hidden=!!editStop._novo;$("sDel").textContent="Apagar parada";stopDelArm=false;
   renderTypes();renderLoc();renderStopThumbs();
 }
-function readStopForm(){editStop.nome=$("sNome").value.trim();editStop.obs=$("sObs").value.trim();editStop.data=$("sData").value;editStop.hora=$("sHora").value;editStop.video=$("sVideo").value.trim()}
+function readStopForm(){editStop.fav=$("sFav").checked;editStop._mon=$("sMon").value;editStop.nome=$("sNome").value.trim();editStop.obs=$("sObs").value.trim();editStop.data=$("sData").value;editStop.hora=$("sHora").value;editStop.video=$("sVideo").value.trim()}
 function openStopSheet(id){
   const t=cur();const s=t.paradas.find(x=>x.id===id);
   editStop=JSON.parse(JSON.stringify(s));editStop._novo=false;editStop._fotosNovas=[];editStop._fotosRemover=[];
   fillStopForm();openSheet("shStop");
 }
-function startPlacing(fromSheet){placing=true;returnToSheet=fromSheet;$("placeBanner").hidden=false;$("mapTrip").scrollIntoView({behavior:"smooth",block:"center"})}
+let placeMode="stop";
+function startPlacing(fromSheet,mode){placing=true;placeMode=mode||"stop";returnToSheet=fromSheet;$("placeTxt").textContent=placeMode==="dest"?"Toque no mapa no lugar do destino":"Toque no mapa onde vocês pararam";$("placeBanner").hidden=false;$("mapTrip").scrollIntoView({behavior:"smooth",block:"center"})}
 function stopPlacing(){placing=false;$("placeBanner").hidden=true}
 $("btnStop").onclick=()=>{editStop=blankStop();startPlacing(false)};
 $("placeCancel").onclick=()=>{stopPlacing();if(returnToSheet){fillStopForm();openSheet("shStop")}};
 function onMapPlace(e){
-  if(!placing)return;const t=cur();const r=snap(t,e.latlng.lat,e.latlng.lng);
+  if(!placing)return;const t=cur();
+  if(placeMode==="dest"){stopPlacing();openDestSheet({lat:+e.latlng.lat.toFixed(6),lon:+e.latlng.lng.toFixed(6)});return}
+  const r=snap(t,e.latlng.lat,e.latlng.lng);
   editStop.lat=+r.lat.toFixed(6);editStop.lon=+r.lon.toFixed(6);editStop.km=r.km;
   stopPlacing();fillStopForm();openSheet("shStop");
 }
@@ -1147,8 +1388,9 @@ $("fStop").addEventListener("submit",async e=>{
   e.preventDefault();readStopForm();const t=cur();if(!t)return;
   for(const f of editStop._fotosRemover){try{await fotoDel(f)}catch(err){}}
   const s={...editStop,fotos:editStop.fotos.filter(f=>!editStop._fotosRemover.includes(f))};
-  const novo=s._novo;delete s._novo;delete s._fotosNovas;delete s._fotosRemover;
+  const novo=s._novo,monId=s.tipo==="monumento"?s._mon:"";delete s._novo;delete s._fotosNovas;delete s._fotosRemover;delete s._mon;
   const i=t.paradas.findIndex(x=>x.id===s.id);if(i>=0)t.paradas[i]=s;else t.paradas.push(s);
+  linkMonument(t,s,monId);
   if(!save())return;editStop._fotosNovas=[];closeSheet("shStop");toast(novo?"Parada salva.":"Parada atualizada.");renderTrip();
 });
 function discardNewPhotos(){if(editStop&&editStop._fotosNovas&&editStop._fotosNovas.length){editStop._fotosNovas.forEach(f=>fotoDel(f).catch(()=>{}));editStop._fotosNovas=[]}}
@@ -1157,12 +1399,12 @@ $("sDel").onclick=async()=>{
   if(!stopDelArm){stopDelArm=true;$("sDel").textContent="Toque de novo pra apagar";return}
   const t=cur();const s=t.paradas.find(x=>x.id===editStop.id);if(!s)return;
   for(const f of s.fotos||[]){try{await fotoDel(f)}catch(err){}}discardNewPhotos();
-  t.paradas=t.paradas.filter(x=>x.id!==s.id);save();closeSheet("shStop");toast("Parada apagada.");renderTrip();
+  t.paradas=t.paradas.filter(x=>x.id!==s.id);linkMonument(t,s,"");save();closeSheet("shStop");toast("Parada apagada.");renderTrip();
 };
 
 /* --- gasto / abastecimento / serviço --- */
 let editG=null,gDelArm=false;
-function tripForDate(d){if(!d)return null;const v=DB.viagens.find(v=>v.inicio&&d>=v.inicio&&d<=(v.fim||v.inicio));return v?v.id:null}
+function tripForDate(d){if(!d)return null;const v=reais().find(v=>v.inicio&&d>=v.inicio&&d<=(v.fim||v.inicio));return v?v.id:null}
 function openGastoSheet(o){
   gDelArm=false;
   if(o.id){editG={...DB.gastos.find(g=>g.id===o.id)}}
@@ -1255,6 +1497,145 @@ $("fMoto").addEventListener("submit",e=>{
   if(!save())return;closeSheet("shMoto");toast("Moto atualizada.");render();
 });
 
+/* ================= estrada (estatísticas do GPX) ================= */
+function renderEstrada(t){
+  const st=tripStats(t);
+  if(!st){$("vEst").innerHTML="";$("vDiasBox").hidden=true;$("vProfBox").hidden=true;$("vEstNote").textContent=(t.segs&&t.segs.length)?"Esta viagem foi importada antes desta versão: importe o GPX de novo (numa viagem nova) pra ver tempo, velocidade e altitude.":"Sem GPX: as estatísticas aparecem quando tiver um trajeto gravado.";return}
+  const box=[];
+  if(st.temT){box.push(statBox(fmtDur(st.mov),"tempo rodando"),statBox(fmtDur(st.tot),"tempo total"),statBox(st.mov?fmtN(st.movKm/(st.mov/3600),0)+" km/h":"–","média rodando"),statBox(st.vmax?fmtN(st.vmax,0)+" km/h":"–","máxima"))}
+  if(st.temE){box.push(statBox(fmtKm(st.eMax)+" m","altitude máx."),statBox(fmtKm(st.eMin)+" m","altitude mín."),statBox(fmtKm(st.gain)+" m","subida acumulada"),statBox(fmtKm(st.loss)+" m","descida acumulada"))}
+  $("vEst").innerHTML=box.join("");
+  const dd=Object.entries(st.dias).sort();
+  $("vDiasBox").hidden=dd.length<1;
+  $("vDiasList").innerHTML=dd.map(([d,k],i)=>`<div class="daykm"><span>Dia ${i+1} · ${fmtData(d)}</span><b>${fmtKm(k)} km</b></div>`).join("");
+  $("vProfBox").hidden=!(st.temE&&st.prof.length>2);
+  if(st.temE&&st.prof.length>2)$("vProf").innerHTML=profileChart(st.prof);
+  $("vEstNote").textContent=[!st.temT?"Esse GPX não tem horário: sem tempo e velocidade.":"",!st.temE?"Esse GPX não tem altitude.":"","A máxima é a média de trechos de 20 segundos, pra não pegar salto do GPS."].filter(Boolean).join(" ");
+}
+function profileChart(pr){
+  const W=340,H=150,pl=38,pb=20,pt=10,pr2=8;
+  const xs=pr.map(p=>p[0]),ys=pr.map(p=>p[1]);const x1=xs[xs.length-1]||1;let y0=Math.min(...ys),y1=Math.max(...ys);if(y1-y0<20){y0-=10;y1+=10}
+  const X=x=>pl+(W-pl-pr2)*x/x1,Y=y=>pt+(H-pt-pb)*(1-(y-y0)/(y1-y0));
+  const line=pr.map((p,i)=>(i?"L":"M")+X(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1)).join("");
+  const area=line+`L${X(x1).toFixed(1)} ${H-pb}L${pl} ${H-pb}Z`;
+  const ticks=[0,0.25,0.5,0.75,1].map(f=>x1*f);
+  const yt=[y0,(y0+y1)/2,y1];
+  return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Perfil de altitude da viagem, de ${fmtKm(y0)} a ${fmtKm(y1)} metros">`+
+    yt.map(v=>`<line x1="${pl}" x2="${W-pr2}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)" stroke-width="1"/><text x="${pl-4}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${fmtKm(v)}</text>`).join("")+
+    `<path d="${area}" fill="var(--sign)" opacity=".18"/><path d="${line}" fill="none" stroke="var(--sign-text)" stroke-width="2" stroke-linejoin="round"/>`+
+    ticks.map(v=>`<text x="${X(v).toFixed(1)}" y="${H-5}" text-anchor="middle">${fmtKm(v)}</text>`).join("")+
+    `<text x="${W-pr2}" y="${pt+8}" text-anchor="end">m</text></svg><p class="note" style="text-align:right">km da viagem</p>`;
+}
+
+/* ================= rota biker ================= */
+function linkMonument(t,s,monId){
+  DB.monumentos.forEach(m=>{if(m.parada&&m.parada.p===s.id&&m.id!==monId){m.parada=null;if(m._auto){m.visitado=false;m.data="";m._auto=false}}});
+  if(!monId)return;const m=DB.monumentos.find(x=>x.id===monId);if(!m)return;
+  m.parada={v:t.id,p:s.id};if(!m.visitado){m.visitado=true;m._auto=true}m.data=s.data||m.data||t.inicio||"";
+  if(s.lat!=null){m.lat=s.lat;m.lon=s.lon;m.aprox=false}
+}
+let rbFilt="todos";
+function renderRota(){
+  const ms=sortedMon(),mv=ms.filter(m=>m.visitado).length,pct=ms.length?mv/ms.length*100:0;
+  $("rbProg").textContent=`${mv} de ${ms.length} monumentos visitados`;$("rbPct").textContent=fmtN(pct,0)+"%";$("rbBar").style.width=pct.toFixed(1)+"%";
+  const F=[["todos","Todos"],["faltam","Faltam"],["visitados","Visitados"],["perto","Mais perto de casa"]];
+  $("rbFilter").innerHTML=F.map(([id,n])=>`<button type="button" class="chip" aria-pressed="${rbFilt===id}" data-f="${id}">${n}</button>`).join("");
+  $("rbFilter").querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{rbFilt=b.dataset.f;renderRota()});
+  let list=ms;
+  if(rbFilt==="faltam")list=ms.filter(m=>!m.visitado);
+  if(rbFilt==="visitados")list=ms.filter(m=>m.visitado);
+  if(rbFilt==="perto")list=ms.filter(m=>!m.visitado&&m.lat!=null).sort((a,b)=>hav(CASA,[a.lat,a.lon])-hav(CASA,[b.lat,b.lon]));
+  $("rbList").innerHTML=list.length?list.map(m=>{const v=m.parada?DB.viagens.find(x=>x.id===m.parada.v):null;
+    return`<div class="mon${m.visitado?" ok":""}"><span class="n">${m.num??"★"}</span><div class="t"><b>${esc(m.nome)}</b><small>${esc(m.cidade)}${m.uf?"/"+esc(m.uf):""}${m.lat!=null?" · "+esc(distLabel(m.lat,m.lon)):""}</small>
+      ${m.visitado?`<span class="badge ok" style="align-self:flex-start">Visitado${m.data?" em "+fmtData(m.data):""}${m.carimbo?" · carimbado":""}</span>`:""}
+      ${m.obs?`<small style="color:var(--fg)">${esc(m.obs)}</small>`:""}
+      <div class="row"><button class="btn btn-sm" type="button" data-mon="${m.id}">${m.visitado?"Editar":"Marcar visita"}</button>${v?`<button class="btn btn-sm btn-ghost" type="button" data-mtrip="${v.id}">Ver na viagem</button>`:""}${m.lat!=null?`<a class="btn btn-sm btn-ghost" href="${wazeURL(m.lat,m.lon)}" target="_blank" rel="noopener">Waze</a>`:""}</div></div></div>`}).join("")
+    :`<div class="empty"><b>${rbFilt==="visitados"?"Nenhum visitado ainda":"Nada aqui"}</b>${rbFilt==="visitados"?'Marque a visita aqui ou numa parada do tipo "Monumento".':""}</div>`;
+  $("rbList").querySelectorAll("[data-mon]").forEach(b=>b.onclick=()=>openMonSheet(b.dataset.mon));
+  $("rbList").querySelectorAll("[data-mtrip]").forEach(b=>b.onclick=()=>openTrip(b.dataset.mtrip));
+}
+$("rbAdd").onclick=()=>openMonSheet(null);
+$("rbMap").onclick=()=>{gRota=true;go("mapa")};
+let editMon=null,mnDelArm=false;
+function openMonSheet(id){
+  mnDelArm=false;const m=id?DB.monumentos.find(x=>x.id===id):null;
+  editMon=m?{...m}:{id:uid("rb"),num:null,nome:"",cidade:"",uf:"",lat:null,lon:null,aprox:false,visitado:false,data:"",carimbo:false,obs:"",parada:null,_novo:true};
+  $("shMonT").textContent=m?"Monumento":"Novo monumento";
+  $("mnNum").value=editMon.num??"";$("mnNome").value=editMon.nome;$("mnCidade").value=editMon.cidade;$("mnUf").value=editMon.uf;
+  $("mnVis").checked=editMon.visitado;$("mnData").value=editMon.data||(m&&!m.visitado?todayISO():editMon.data||"");$("mnCarimbo").checked=!!editMon.carimbo;$("mnObs").value=editMon.obs||"";
+  $("mnDelRow").hidden=!m;$("mnDel").textContent="Tirar da lista";monLoc();openSheet("shMon");
+}
+function monLoc(){$("mnLoc").textContent=editMon.lat==null?"Sem posição no mapa":editMon.aprox?"Posição aproximada (centro da cidade)":"Posição marcada no lugar";$("mnLoc").className="loc"+(editMon.lat!=null&&!editMon.aprox?" ok":"")}
+$("mnGps").onclick=()=>{if(!navigator.geolocation){toast("Este navegador não dá acesso ao GPS.");return}
+  $("mnLoc").textContent="Buscando sinal de GPS…";
+  navigator.geolocation.getCurrentPosition(p=>{editMon.lat=+p.coords.latitude.toFixed(6);editMon.lon=+p.coords.longitude.toFixed(6);editMon.aprox=false;$("mnVis").checked=true;if(!$("mnData").value)$("mnData").value=todayISO();monLoc()},
+    ()=>{monLoc();toast("Não consegui pegar o GPS agora.")},{enableHighAccuracy:true,timeout:15000,maximumAge:30000})};
+$("fMon").addEventListener("submit",e=>{
+  e.preventDefault();const nome=$("mnNome").value.trim();if(!nome)return;
+  const n=num($("mnNum").value);
+  Object.assign(editMon,{num:n!=null?Math.round(n):null,nome,cidade:$("mnCidade").value.trim(),uf:$("mnUf").value.trim().toUpperCase(),visitado:$("mnVis").checked,data:$("mnVis").checked?$("mnData").value:"",carimbo:$("mnCarimbo").checked,obs:$("mnObs").value.trim(),_auto:false});
+  const novo=editMon._novo;delete editMon._novo;
+  const i=DB.monumentos.findIndex(x=>x.id===editMon.id);if(i>=0)DB.monumentos[i]=editMon;else DB.monumentos.push(editMon);
+  if(!save())return;closeSheet("shMon");toast(novo?"Monumento adicionado.":"Monumento atualizado.");render();
+});
+$("mnDel").onclick=()=>{if(!mnDelArm){mnDelArm=true;$("mnDel").textContent="Toque de novo pra tirar";return}
+  DB.monumentos=DB.monumentos.filter(m=>m.id!==editMon.id);save();closeSheet("shMon");toast("Monumento tirado da lista.");render()};
+
+/* ================= favoritos ================= */
+let favTipo="todos";
+function renderFav(){
+  const all=[];reais().forEach(v=>(v.paradas||[]).forEach(s=>{if(s.fav)all.push({v,s})}));
+  $("favFilter").innerHTML=[["todos","Todos"],...TIPOS.map(t=>[t.id,t.nome])].map(([id,n])=>`<button type="button" class="chip" aria-pressed="${favTipo===id}" data-ft="${id}">${n}</button>`).join("");
+  $("favFilter").querySelectorAll("[data-ft]").forEach(b=>b.onclick=()=>{favTipo=b.dataset.ft;renderFav()});
+  const list=all.filter(x=>favTipo==="todos"||x.s.tipo===favTipo).sort((a,b)=>(b.s.data||"").localeCompare(a.s.data||""));
+  $("favList").innerHTML=list.length?list.map(({v,s})=>{const tp=tipo(s.tipo);return`<div class="mon"><span class="n" style="background:${tp.cor};border-color:${tp.cor};color:#fff">★</span><div class="t"><b>${esc(s.nome||tp.nome)}</b><small>${esc(tp.nome)} · ${esc(v.nome)}${s.data?" · "+fmtData(s.data):""}</small>${s.obs?`<small style="color:var(--fg)">${esc(s.obs)}</small>`:""}
+    <div class="row"><button class="btn btn-sm" type="button" data-ftrip="${v.id}">Ver na viagem</button>${s.lat!=null?`<a class="btn btn-sm btn-sign" href="${wazeURL(s.lat,s.lon)}" target="_blank" rel="noopener">Ir com Waze</a>`:""}</div></div></div>`}).join("")
+    :`<div class="empty"><b>Nenhum favorito ${favTipo==="todos"?"ainda":"desse tipo"}</b>Ao salvar uma parada, marque "Vale voltar".</div>`;
+  $("favList").querySelectorAll("[data-ftrip]").forEach(b=>b.onclick=()=>openTrip(b.dataset.ftrip));
+}
+
+/* ================= planejar viagem ================= */
+function destKm(t){const ds=(t.destinos||[]).filter(d=>d.lat!=null);if(!ds.length)return 0;let k=0,prev=CASA;for(const d of ds){k+=hav(prev,[d.lat,d.lon]);prev=[d.lat,d.lon]}return k}
+function renderRoteiro(t){
+  const ds=t.destinos||[];
+  $("destList").innerHTML=ds.length?ds.map((d,i)=>`<div class="dest"><span class="k">${i+1}</span><span class="t"><b>${esc(d.nome)}</b><small>${d.lat!=null?esc(distLabel(d.lat,d.lon)):"sem posição"}</small></span>
+    <button type="button" data-up="${i}" aria-label="Subir"${i===0?" disabled":""}>↑</button><button type="button" data-dn="${i}" aria-label="Descer"${i===ds.length-1?" disabled":""}>↓</button><button type="button" data-rm="${i}" aria-label="Tirar do roteiro">✕</button></div>`).join("")
+    :`<div class="empty"><b>Roteiro vazio</b>Comece adicionando o primeiro destino.</div>`;
+  const mv=(i,j)=>{const a=t.destinos;[a[i],a[j]]=[a[j],a[i]];save();renderTrip()};
+  $("destList").querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>mv(+b.dataset.up,+b.dataset.up-1));
+  $("destList").querySelectorAll("[data-dn]").forEach(b=>b.onclick=()=>mv(+b.dataset.dn,+b.dataset.dn+1));
+  $("destList").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{t.destinos.splice(+b.dataset.rm,1);save();renderTrip()});
+  const pts=ds.filter(d=>d.lat!=null);const gl=$("gmapsLink");
+  if(pts.length){const dest=pts[pts.length-1],way=pts.slice(0,-1).map(d=>`${d.lat},${d.lon}`).join("|");
+    gl.href=`https://www.google.com/maps/dir/?api=1&origin=${CASA.join(",")}&destination=${dest.lat},${dest.lon}${way?"&waypoints="+encodeURIComponent(way):""}&travelmode=driving`;gl.removeAttribute("aria-disabled");gl.style.opacity=""}
+  else{gl.removeAttribute("href");gl.setAttribute("aria-disabled","true");gl.style.opacity=".5"}
+}
+$("destAdd").onclick=()=>startPlacing(false,"dest");
+$("destMon").onclick=()=>openDestSheet({mon:true});
+let destDraft=null;
+function openDestSheet(o){
+  destDraft=o;$("dMonLbl").hidden=!o.mon;$("dNome").closest("label").hidden=!!o.mon;$("dNome").required=!o.mon;
+  $("shDestT").textContent=o.mon?"Monumento no roteiro":"Novo destino";$("dNome").value="";
+  if(o.mon)$("dMonSel").innerHTML=sortedMon().filter(m=>m.lat!=null).map(m=>`<option value="${m.id}">${esc(monLabel(m))}${m.visitado?" ✓":""}</option>`).join("");
+  openSheet("shDest");
+}
+$("fDest").addEventListener("submit",e=>{
+  e.preventDefault();const t=cur();if(!t)return;t.destinos=t.destinos||[];
+  if(destDraft.mon){const m=DB.monumentos.find(x=>x.id===$("dMonSel").value);if(!m)return;t.destinos.push({id:uid("d"),nome:`${m.nome} (${m.cidade})`,lat:m.lat,lon:m.lon,mon:m.id})}
+  else{const nome=$("dNome").value.trim();if(!nome)return;t.destinos.push({id:uid("d"),nome,lat:destDraft.lat,lon:destDraft.lon})}
+  if(!save())return;closeSheet("shDest");toast("Destino adicionado.");renderTrip();
+});
+$("planStart").onclick=()=>{const t=cur();if(!t)return;t.planejada=false;if(!t.inicio)t.inicio=todayISO();if(!t.fim)t.fim=t.inicio;save();vTab="paradas";toast("Boa viagem! Agora é só marcar as paradas e, na volta, importar o GPX.");renderTrip()};
+function renderBagagem(t){
+  const b=t.checklist=t.checklist||[];const ok=b.filter(x=>x.ok).length;
+  $("bagProg").textContent=b.length?`${ok} de ${b.length} itens prontos`:"Lista vazia";
+  $("bagList").innerHTML=b.map((x,i)=>`<label class="chk${x.ok?" done":""}" for="bag-${x.id}"><input type="checkbox" id="bag-${x.id}" data-bi="${i}"${x.ok?" checked":""}><span>${esc(x.txt)}</span><button type="button" data-bx="${i}" aria-label="Tirar ${esc(x.txt)} da lista">✕</button></label>`).join("");
+  $("bagList").querySelectorAll("[data-bi]").forEach(c=>c.onchange=()=>{b[+c.dataset.bi].ok=c.checked;save();renderTrip()});
+  $("bagList").querySelectorAll("[data-bx]").forEach(c=>c.onclick=e=>{e.preventDefault();b.splice(+c.dataset.bx,1);save();renderTrip()});
+}
+$("bagForm").addEventListener("submit",e=>{e.preventDefault();const t=cur();const v=$("bagNew").value.trim();if(!t||!v)return;(t.checklist=t.checklist||[]).push({id:uid("b"),txt:v,ok:false});$("bagNew").value="";save();renderTrip()});
+$("bagReset").onclick=()=>{const t=cur();(t.checklist||[]).forEach(x=>x.ok=false);save();renderTrip()};
+
 /* visualizador de foto */
 function openViewer(u){$("viewerImg").src=u;$("viewer").hidden=false}
 $("viewerClose").onclick=()=>$("viewer").hidden=true;
@@ -1267,7 +1648,7 @@ $("btnExport").onclick=async()=>{
   const fotos={};
   for(const v of DB.viagens)for(const s of v.paradas||[])for(const f of s.fotos||[]){try{const b=await fotoGet(f);if(b)fotos[f]=await blobToDataURL(b)}catch(e){}}
   DB.ultimoBackup=new Date().toISOString();
-  const pack={app:"diario-fernweh-riders",versao:2,exportadoEm:DB.ultimoBackup,viagens:DB.viagens,gastos:DB.gastos,itens:DB.itens,moto:DB.moto,fotos};
+  const pack={app:"diario-fernweh-riders",versao:3,exportadoEm:DB.ultimoBackup,viagens:DB.viagens,gastos:DB.gastos,itens:DB.itens,moto:DB.moto,monumentos:DB.monumentos,fotos};
   const blob=new Blob([JSON.stringify(pack)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`diario-fernweh-${todayISO()}.json`;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
@@ -1288,9 +1669,10 @@ function mergeById(dst,src){for(const x of src||[]){const i=dst.findIndex(y=>y.i
 async function doImport(replace){
   const d=pendingImport;if(!d)return;
   if(replace){for(const v of DB.viagens)for(const s of v.paradas||[])for(const f of s.fotos||[]){try{await fotoDel(f)}catch(e){}}
-    DB=normalize({viagens:[],gastos:[],itens:d.itens||undefined,moto:d.moto,ultimoBackup:DB.ultimoBackup})}
+    DB=normalize({viagens:[],gastos:[],itens:d.itens||undefined,moto:d.moto,monumentos:d.monumentos||undefined,ultimoBackup:DB.ultimoBackup})}
   mergeById(DB.viagens,d.viagens);mergeById(DB.gastos,d.gastos);
   if(!replace&&Array.isArray(d.itens))mergeById(DB.itens,d.itens);
+  if(!replace&&Array.isArray(d.monumentos))mergeById(DB.monumentos,d.monumentos);
   if(!replace&&d.moto){if(d.moto.odo!=null&&(DB.moto.odo==null||d.moto.odo>DB.moto.odo)){DB.moto.odo=d.moto.odo;DB.moto.odoData=d.moto.odoData}}
   for(const[id,du]of Object.entries(d.fotos||{})){try{await fotoPut(id,await dataURLToBlob(du))}catch(e){}}
   urlCache.clear();save();pendingImport=null;$("impConfirm").hidden=true;toast(`${d.viagens.length} viagens importadas.`);renderBackup();
