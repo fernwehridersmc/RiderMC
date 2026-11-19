@@ -243,6 +243,15 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
 .daykm{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
 .daykm:last-child{border-bottom:0}
 .daykm b{font-family:var(--mono)}
+.recdot{width:12px;height:12px;border-radius:50%;background:var(--lantern);display:inline-block;flex-shrink:0}
+@media (prefers-reduced-motion:no-preference){.recdot{animation:blink 1.2s infinite}@keyframes blink{50%{opacity:.25}}}
+.recbox{border:2px solid var(--sign)}
+.recbox.on{border-color:var(--lantern)}
+.recpill:not([hidden])+.arrow{display:none}
+.plate .border>div{min-width:0}
+.plate h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recpill{display:inline-flex;align-items:center;gap:6px;background:var(--lantern);color:#fff;border:0;border-radius:999px;min-height:34px;padding:0 12px;font:800 13px/1 var(--mono);cursor:pointer;flex-shrink:0}
+.recbig{min-height:58px;font-size:18px}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
 @media (min-width:700px){.grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .grid button{padding:0;border:0;background:var(--surface-2);aspect-ratio:1;max-width:100%;border-radius:6px;overflow:hidden;cursor:pointer;position:relative}
@@ -277,6 +286,7 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
         <h1>Diário de Estrada</h1>
         <small>Fernweh Riders · P&amp;D</small>
       </div>
+      <button type="button" class="recpill" id="recPill" hidden aria-label="Gravando viagem: abrir"><span class="recdot" style="background:#fff"></span><span id="recPillTxt">REC</span></button>
       <svg class="arrow" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
     </div>
   </div>
@@ -297,6 +307,38 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
         <div class="stat"><b id="hKml">–</b><span>km/l médio</span></div>
       </div>
     </div>
+    <div class="card section recbox" id="recBox" hidden>
+      <div id="recIdle" class="section">
+        <b style="font-size:18px">Gravar viagem</b>
+        <p class="note">Grava o trajeto sozinho, com a tela apagada e o Waze aberto. No fim vira uma viagem com km, tempo, velocidade e altitude.</p>
+        <button class="btn btn-sign recbig" type="button" id="recStartBtn"><span class="recdot" style="background:#fff"></span>Iniciar gravação</button>
+        <p class="note">Pra não parar no meio: Configurações do celular → Apps → Diário Fernweh → Bateria → <b>Sem restrições</b>. E na localização, escolha <b>Permitir o tempo todo</b> ou <b>Durante o uso</b>.</p>
+      </div>
+      <div id="recOn" class="section" hidden>
+        <div class="row"><span class="recdot"></span><b class="grow">GRAVANDO</b><span class="num" id="recTime">0:00</span></div>
+        <div class="stats">
+          <div class="stat"><b id="recKm">0</b><span>km</span></div>
+          <div class="stat"><b id="recVel">–</b><span>km/h agora</span></div>
+          <div class="stat"><b id="recNStops">0</b><span>paradas</span></div>
+        </div>
+        <div class="map" id="mapRec" style="height:220px" role="region" aria-label="Trajeto sendo gravado"></div>
+        <p class="note" id="recGps">Esperando sinal do GPS…</p>
+        <div class="types" id="recTypes" hidden role="group" aria-label="Tipo da parada rápida"></div>
+        <div class="row">
+          <button class="btn grow" type="button" id="recStopBtn">+ Parada rápida</button>
+          <button class="btn btn-sign grow" type="button" id="recEndBtn">Finalizar viagem</button>
+        </div>
+        <button class="btn btn-sm btn-ghost" type="button" id="recDiscard" style="align-self:flex-start">Descartar gravação</button>
+      </div>
+      <div id="recLost" class="section" hidden>
+        <b style="font-size:18px">A gravação foi interrompida</b>
+        <p class="note" id="recLostTxt"></p>
+        <div class="row">
+          <button class="btn btn-sign grow" type="button" id="recResume">Continuar gravando</button>
+          <button class="btn grow" type="button" id="recFinishLost">Finalizar com o que tem</button>
+        </div>
+      </div>
+    </div>
     <div class="list" id="homeAlerts"></div>
     <div class="list" id="homeExtra"></div>
     <div class="quick">
@@ -308,6 +350,11 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V8l-3-3"/><path d="M7 7h4"/></svg>Abastecer</button>
       <button class="btn" type="button" id="qGasto">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg>Lançar gasto</button>
+    </div>
+    <div class="card section" id="apkBox" hidden>
+      <b>Gravar o trajeto sem abrir outro app</b>
+      <p class="note">Isso funciona no app Android do Diário: ele grava com a tela apagada. O app e este site guardam os dados separados: pra levar tudo pro app, exporte o backup aqui e importe lá.</p>
+      <a class="btn btn-sign" href="https://github.com/fernwehridersmc/RiderMC/releases/latest/download/diario-fernweh.apk" target="_blank" rel="noopener">Baixar o app Android (APK)</a>
     </div>
     <div class="row"><h2 class="grow">Últimas viagens</h2><button class="btn btn-sm btn-ghost" type="button" data-go="viagens">Ver todas</button></div>
     <div class="list" id="recent"></div>
@@ -376,7 +423,10 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
       <div class="card section" id="vProfBox"><h2>Perfil de altitude</h2><div id="vProf"></div></div>
       <p class="note" id="vEstNote"></p>
       <div class="card section"><h2>Notas da viagem</h2><div class="notes" id="vNotas"></div></div>
-      <label class="btn file-btn" for="gpxAdd">+ Adicionar GPX de outro dia<input id="gpxAdd" type="file" multiple></label>
+      <div class="row">
+        <label class="btn file-btn grow" for="gpxAdd">+ GPX de outro dia<input id="gpxAdd" type="file" multiple></label>
+        <button class="btn grow" type="button" id="gpxExport">Exportar GPX</button>
+      </div>
     </div>
 
     <div id="vt-midia" class="section" hidden>
@@ -847,6 +897,11 @@ nav.tabs .alertdot{position:absolute;top:10px;right:calc(50% - 18px);width:10px;
 (function(){
 "use strict";
 const $=id=>document.getElementById(id);
+/* ---- app Android (Capacitor): plugins nativos, ou null no navegador ---- */
+const CAP=window.Capacitor;
+const NATIVE=!!(CAP&&CAP.isNativePlatform&&CAP.isNativePlatform());
+const plug=n=>{try{return NATIVE&&CAP.registerPlugin?CAP.registerPlugin(n):null}catch(e){return null}};
+const BG=plug("BackgroundGeolocation"),LNOT=plug("LocalNotifications"),FSYS=plug("Filesystem"),SHARE=plug("Share"),APPN=plug("App");
 const KEY="fernweh_diario_v1";
 const ROUTE_COLORS=["#F2C230","#4FB3E8","#F07C3E","#B98CF2","#5FD08F","#F26D8F"];
 const TIPOS=[
@@ -1167,6 +1222,7 @@ function tripRow(v){const n=(v.paradas||[]).length;const g=totalGastos(gastosDaV
 function emptyTrips(){return`<div class="empty"><b>Nenhuma viagem ainda</b>Toque em "Importar GPX" e escolha o arquivo da última saída.</div>`}
 function bindRows(el){el.querySelectorAll(".trip").forEach(b=>b.onclick=()=>openTrip(b.dataset.id))}
 function renderHome(){
+  renderRec();$("apkBox").hidden=NATIVE;
   const y=thisYear();$("hYear").textContent=y;
   const vs=reais().filter(v=>ano(v)===y);
   $("hKm").textContent=fmtKm(vs.reduce((a,v)=>a+tripKm(v),0));
@@ -1959,11 +2015,142 @@ async function drawArte(t){
 function artBlob(){return new Promise(res=>$("artCanvas").toBlob(b=>res(b),"image/png"))}
 function artName(){const t=DB.viagens.find(v=>v.id===artTripId);return`fernweh-${(t?t.nome:"viagem").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}-${artFmt}.png`}
 $("artSave").onclick=async()=>{const b=await artBlob();if(!b){toast("Não consegui gerar a imagem.");return}
-  const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=artName();document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);toast("Imagem salva em Downloads.")};
+  if(NATIVE){await shareFile(b,artName(),"Imagem da viagem");return}
+  downloadBlob(b,artName());toast("Imagem salva em Downloads.")};
 $("artShare").onclick=async()=>{const b=await artBlob();if(!b){toast("Não consegui gerar a imagem.");return}
+  if(NATIVE){await shareFile(b,artName(),"Fernweh Riders");return}
   const f=new File([b],artName(),{type:"image/png"});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:"Fernweh Riders"})}catch(e){if(e&&e.name!=="AbortError")toast("Não deu pra compartilhar. Use Baixar imagem.")}}
   else{toast("Este navegador não compartilha arquivos. Baixando a imagem…");$("artSave").click()}};
+
+/* ================= arquivos: baixar (site) ou compartilhar (app) ================= */
+function downloadBlob(blob,nome){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
+async function shareFile(blob,nome,titulo){
+  if(!(FSYS&&SHARE)){downloadBlob(blob,nome);return true}
+  try{const b64=(await blobToDataURL(blob)).split(",")[1];
+    const r=await FSYS.writeFile({path:nome,data:b64,directory:"CACHE"});
+    await SHARE.share({title:titulo,files:[r.uri],dialogTitle:titulo});return true}
+  catch(e){const m=String(e&&(e.message||e)||"");if(!/cancel/i.test(m))toast("Não deu pra compartilhar o arquivo.");return false}
+}
+/* GPX da viagem (trajeto simplificado, sem horário) */
+$("gpxExport").onclick=async()=>{
+  const t=cur();if(!t||!(t.segs&&t.segs.length)){toast("Esta viagem não tem trajeto pra exportar.");return}
+  const x=s=>esc(s);
+  const segs=t.segs.map(sg=>"<trkseg>"+sg.map(p=>`<trkpt lat="${p[0]}" lon="${p[1]}"/>`).join("")+"</trkseg>").join("");
+  const wpts=sortedStops(t).filter(s=>s.lat!=null).map(s=>`<wpt lat="${s.lat}" lon="${s.lon}"><name>${x(s.nome||tipo(s.tipo).nome)}</name><type>${x(tipo(s.tipo).nome)}</type></wpt>`).join("");
+  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Diário de Estrada Fernweh Riders" xmlns="http://www.topografix.com/GPX/1/1"><metadata><name>${x(t.nome)}</name></metadata>${wpts}<trk><name>${x(t.nome)}</name>${segs}</trk></gpx>`;
+  const nome=`${t.nome.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"viagem"}.gpx`;
+  const blob=new Blob([gpx],{type:"application/gpx+xml"});
+  if(NATIVE)await shareFile(blob,nome,"GPX da viagem");else{downloadBlob(blob,nome);toast("GPX salvo em Downloads.")}
+};
+
+/* ================= gravação do trajeto (app Android) ================= */
+const REC_KEY="fernweh_rec";
+let REC=null,watchId=null,recMap=null,recLine=null,recDot=null,recSavedAt=0,recTimer=null,lastFix=null,endArm=false,discArm=false;
+function recLoad(){try{REC=JSON.parse(localStorage.getItem(REC_KEY)||"null")}catch(e){REC=null}if(REC&&!REC.ativo)REC=null}
+function recSave(force){const now=Date.now();if(!force&&now-recSavedAt<15000)return;recSavedAt=now;
+  try{localStorage.setItem(REC_KEY,JSON.stringify(REC))}catch(e){toast("A memória do app encheu: finalize a gravação pra não perder.")}}
+function hms(ms){const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;return h?`${h}:${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`:`${m}:${String(ss).padStart(2,"0")}`}
+function renderRec(){
+  const box=$("recBox");box.hidden=!NATIVE&&!REC;
+  if(box.hidden){updatePill();return}
+  const on=!!(REC&&REC.ativo&&watchId!=null),lost=!!(REC&&REC.ativo&&watchId==null);
+  $("recIdle").hidden=!!REC;$("recOn").hidden=!on;$("recLost").hidden=!lost;box.classList.toggle("on",on);
+  endArm=false;discArm=false;$("recEndBtn").textContent="Finalizar viagem";$("recDiscard").textContent="Descartar gravação";
+  if(lost){const last=REC.pts[REC.pts.length-1];$("recLostTxt").textContent=`O celular fechou o app no meio da gravação. Ficaram ${fmtKm1(REC.km||0)} km gravados${last?" até "+new Date(last[3]).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}):""}.`}
+  if(on){
+    if(!recMap){recMap=mkMap($("mapRec"));recLine=L.polyline([],{color:"#F2C230",weight:5}).addTo(recMap);recDot=L.circleMarker(CASA,{radius:8,color:"#fff",weight:3,fillColor:"#C2303A",fillOpacity:1})}
+    setTimeout(()=>recMap.invalidateSize(),0);
+    recLine.setLatLngs(REC.pts.map(p=>[p[0],p[1]]));
+    if(REC.pts.length){const l=REC.pts[REC.pts.length-1];recDot.setLatLng([l[0],l[1]]).addTo(recMap);recMap.setView([l[0],l[1]],Math.max(recMap.getZoom(),13))}
+    updateRecLive();
+  }
+  updatePill();
+}
+function updatePill(){const on=!!(REC&&REC.ativo&&watchId!=null);$("recPill").hidden=!on;if(on)$("recPillTxt").textContent=`REC ${fmtKm1(REC.km||0)} km`}
+$("recPill").onclick=()=>go("inicio");
+function updateRecLive(){
+  if(!REC)return;
+  $("recKm").textContent=fmtKm1(REC.km||0);$("recNStops").textContent=REC.paradas.length;
+  $("recTime").textContent=hms(Date.now()-REC.inicio);
+  $("recVel").textContent=lastFix&&lastFix.v!=null&&Date.now()-lastFix.t<30000?fmtN(lastFix.v,0):"–";
+  $("recGps").textContent=lastFix?`Último sinal: ${new Date(lastFix.t).toLocaleTimeString("pt-BR")} · precisão ${lastFix.acc!=null?Math.round(lastFix.acc)+" m":"?"}`:"Esperando sinal do GPS… (pode levar 1 minuto)";
+  updatePill();
+}
+function onFix(l){
+  if(!REC||!REC.ativo)return;
+  const t=l.time||Date.now();
+  lastFix={t:Date.now(),v:l.speed!=null?l.speed*3.6:null,acc:l.accuracy,lat:l.latitude,lon:l.longitude};
+  if(l.accuracy!=null&&l.accuracy>60){updateRecLive();return}
+  const p=[+l.latitude.toFixed(6),+l.longitude.toFixed(6),l.altitude!=null?Math.round(l.altitude):null,t];
+  const last=REC.pts[REC.pts.length-1];
+  if(last){const d=hav(last,p),dt=(p[3]-last[3])/1000;if(dt<=0)return;if(d/dt*3600>250)return;if(dt<=10800)REC.km=(REC.km||0)+d}
+  REC.pts.push(p);recSave(false);
+  if(recLine&&screen==="inicio"){recLine.addLatLng([p[0],p[1]]);recDot.setLatLng([p[0],p[1]]).addTo(recMap);if(!recMap.getBounds().pad(-0.15).contains([p[0],p[1]]))recMap.panTo([p[0],p[1]])}
+  updateRecLive();
+}
+async function addWatch(){
+  watchId=await BG.addWatcher({backgroundTitle:"Gravando a viagem",backgroundMessage:"O Diário Fernweh está gravando o trajeto. Toque pra abrir.",requestPermissions:true,stale:false,distanceFilter:15},
+    (loc,err)=>{if(err){if(err.code==="NOT_AUTHORIZED"){toast("O app precisa da localização. Abrindo as configurações…");setTimeout(()=>BG.openSettings(),1500)}return}if(loc)onFix(loc)});
+  clearInterval(recTimer);recTimer=setInterval(()=>{if(screen==="inicio"&&REC)updateRecLive();else updatePill()},1000);
+}
+async function startRec(){
+  if(!BG){toast("A gravação só funciona no app Android.");return}
+  try{if(LNOT){const pm=await LNOT.checkPermissions();if(pm.display!=="granted")await LNOT.requestPermissions()}}catch(e){}
+  REC={ativo:true,inicio:Date.now(),pts:[],paradas:[],km:0};lastFix=null;recSave(true);
+  try{await addWatch()}catch(e){toast("Não consegui ligar o GPS: "+(e.message||e));REC=null;localStorage.removeItem(REC_KEY);watchId=null}
+  renderRec();
+}
+async function resumeRec(){if(!BG||!REC)return;try{await addWatch();toast("Gravação retomada.")}catch(e){toast("Não consegui ligar o GPS.")}renderRec()}
+async function stopWatch(){if(watchId!=null&&BG){try{await BG.removeWatcher({id:watchId})}catch(e){}}watchId=null;clearInterval(recTimer);recTimer=null}
+function buildTripFromRec(){
+  const pts=REC.pts;if(pts.length<2)return null;
+  const raw=[];let segc=[];
+  pts.forEach((p,i)=>{if(i&&p[3]-pts[i-1][3]>10800000){if(segc.length>1)raw.push(segc);segc=[]}segc.push({la:p[0],lo:p[1],ele:p[2],t:p[3]})});
+  if(segc.length>1)raw.push(segc);if(!raw.length)return null;
+  const ini=localISO(new Date(pts[0][3])),fim=localISO(new Date(pts[pts.length-1][3]));
+  const t={id:uid("v"),nome:`Viagem de ${fmtData(ini).slice(0,5)}`,inicio:ini,fim,notas:"",cor:nextColor(),
+    segs:raw.map(s=>simplify(s.map(q=>[q.la,q.lo])).map(q=>[+q[0].toFixed(5),+q[1].toFixed(5)])),gpx:[gpxStats(raw)],kmManual:null,paradas:[],criado:Date.now(),gravada:true};
+  t.paradas=REC.paradas.map(q=>{const d=new Date(q.t);return{id:uid("p"),tipo:q.tipo,nome:"",obs:"",data:localISO(d),hora:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"),lat:q.lat,lon:q.lon,km:null,fotos:[],video:"",criado:q.t}});
+  recomputeStopKm(t);return t;
+}
+async function finishRec(){
+  await stopWatch();
+  const t=buildTripFromRec();
+  localStorage.removeItem(REC_KEY);REC=null;lastFix=null;
+  if(!t){toast("Gravação muito curta: nada foi salvo.");renderRec();return}
+  DB.viagens.push(t);if(!save())return;
+  toast(`Viagem salva: ${fmtKm(tripKm(t))} km. Toque em Editar pra dar um nome.`);openTrip(t.id);
+}
+$("recStartBtn").onclick=startRec;
+$("recResume").onclick=resumeRec;
+$("recFinishLost").onclick=finishRec;
+$("recEndBtn").onclick=()=>{if(!endArm){endArm=true;$("recEndBtn").textContent="Toque de novo pra finalizar";setTimeout(()=>{endArm=false;if($("recEndBtn"))$("recEndBtn").textContent="Finalizar viagem"},4000);return}finishRec()};
+$("recDiscard").onclick=async()=>{if(!discArm){discArm=true;$("recDiscard").textContent="Toque de novo: apaga o trajeto gravado";return}
+  await stopWatch();localStorage.removeItem(REC_KEY);REC=null;lastFix=null;toast("Gravação descartada.");renderRec()};
+$("recStopBtn").onclick=()=>{const tb=$("recTypes");tb.hidden=!tb.hidden;
+  tb.innerHTML=TIPOS.map(t=>`<button type="button" data-rt="${t.id}"><i style="background:${t.cor}"></i>${t.nome}</button>`).join("");
+  tb.querySelectorAll("[data-rt]").forEach(b=>b.onclick=()=>{
+    const l=REC&&REC.pts[REC.pts.length-1];const f=lastFix&&Date.now()-lastFix.t<120000?lastFix:null;
+    const lat=f?f.lat:l&&l[0],lon=f?f.lon:l&&l[1];
+    if(lat==null){toast("Ainda sem sinal do GPS. Tente de novo em instantes.");return}
+    REC.paradas.push({tipo:b.dataset.rt,lat:+(+lat).toFixed(6),lon:+(+lon).toFixed(6),t:Date.now()});recSave(true);
+    tb.hidden=true;updateRecLive();toast(`Parada marcada (${tipo(b.dataset.rt).nome}). Fotos e nome você coloca depois.`)});
+};
+
+/* botão voltar do Android */
+if(APPN&&APPN.addListener){APPN.addListener("backButton",()=>{
+  if(!$("viewer").hidden){$("viewer").hidden=true;return}
+  const open=[...document.querySelectorAll(".sheet:not([hidden])")];if(open.length){closeSheet(open[open.length-1].id);return}
+  if(placing){stopPlacing();return}
+  const BACK={viagem:"viagens",arte:"viagem",resumo:"mais",gastos:"mais",backup:"mais",rota:"mais",favoritos:"mais",galeria:"mais",posts:"mais"};
+  if(screen==="arte"){curId=artTripId;go("viagem");return}
+  if(BACK[screen]){go(BACK[screen]);return}
+  if(screen!=="inicio"){go("inicio");return}
+  if(APPN.minimizeApp)APPN.minimizeApp();
+});
+  APPN.addListener("appStateChange",st=>{if(st.isActive&&REC&&screen==="inicio")renderRec()});
+}
 
 /* visualizador de foto */
 function openViewer(u,cap){$("viewerImg").src=u;$("viewerCap").textContent=cap||"";$("viewer").hidden=false}
@@ -1979,8 +2166,9 @@ $("btnExport").onclick=async()=>{
   DB.ultimoBackup=new Date().toISOString();
   const pack={app:"diario-fernweh-riders",versao:4,exportadoEm:DB.ultimoBackup,viagens:DB.viagens,gastos:DB.gastos,itens:DB.itens,moto:DB.moto,monumentos:DB.monumentos,posts:DB.posts,fotos};
   const blob=new Blob([JSON.stringify(pack)],{type:"application/json"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`diario-fernweh-${todayISO()}.json`;document.body.appendChild(a);a.click();
-  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
+  const nome=`diario-fernweh-${todayISO()}.json`;
+  if(NATIVE){save();renderBackup();const ok=await shareFile(blob,nome,"Backup do Diário");if(ok)toast("Escolha o Google Drive pra guardar o backup.");return}
+  downloadBlob(blob,nome);
   save();renderBackup();toast("Backup gerado. Guarde o arquivo no Drive.");
 };
 let pendingImport=null;
@@ -2016,8 +2204,9 @@ async function renderBackup(){
 
 /* ================= partida ================= */
 load();save();
+recLoad();
 idbOpen().then(()=>{go("inicio");importShared()});
-if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+if(!NATIVE&&"serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){navigator.serviceWorker.register("sw.js").catch(()=>{})}
 if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().catch(()=>{})}
 })();
 </script>

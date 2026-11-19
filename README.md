@@ -5,7 +5,7 @@ Projeto pessoal, feito por hobby.
 
 **App:** https://fernwehridersmc.github.io/RiderMC/
 
-## O que faz (versão 4)
+## O que faz (versão 5)
 - Importa um ou vários arquivos GPX (viagem de vários dias = vários GPX numa viagem só)
 - Mostra a rota no mapa (OpenStreetMap) e calcula km e datas
 - Paradas: toca no mapa (ou usa o GPS do celular), escolhe o tipo (posto, comida, ponto turístico, monumento, pernoite), escreve a observação, põe fotos e o link do vídeo
@@ -38,3 +38,13 @@ O `sw.js` guarda o app e os pedaços de mapa já vistos. Sem sinal, o app abre n
 ## Como editar
 - O código fica em `src/app.html`.
 - Rode `python3 tools/build.py` para gerar o `index.html` (ele embute o Leaflet 1.9.4 de `tools/vendor/`).
+
+## App Android (gravação do trajeto)
+- Baixar: https://github.com/fernwehridersmc/RiderMC/releases/latest/download/diario-fernweh.apk
+- É o mesmo `index.html` embrulhado com Capacitor 7 (pasta `android-app/`), mais o plugin
+  `@capacitor-community/background-geolocation`, que grava com a tela apagada (notificação fixa "Gravando a viagem").
+- Cada push no `index.html`, em `assets/` ou em `android-app/` dispara o GitHub Actions (`.github/workflows/android.yml`),
+  que gera o APK e publica em Releases.
+- O APK é assinado com `android-app/fernweh-app.keystore` (chave fixa, pra atualização instalar por cima).
+  Projeto pessoal: a senha está no `scripts/patch_android.py`. Se um dia for pra Play Store, trocar por uma chave guardada em segredo.
+- O app e o site guardam os dados separados: use Backup → Exportar num e Importar no outro.

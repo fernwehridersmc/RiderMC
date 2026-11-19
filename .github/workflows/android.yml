@@ -1,0 +1,83 @@
+name: App Android
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/**"
+      - "android-app/**"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: android-app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Copiar o app (index.html) pro projeto
+        run: npm run prepare-www
+
+      - name: Gerar projeto Android
+        run: npx cap add android
+
+      - name: Ajustar ícone, versão, assinatura e notificação
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          pip install --quiet pillow
+          python3 scripts/patch_android.py
+
+      - name: Sincronizar plugins
+        run: npx cap sync android
+
+      - name: Compilar APK
+        working-directory: android-app/android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Renomear APK
+        run: |
+          mkdir -p ../dist
+          cp android/app/build/outputs/apk/release/app-release.apk ../dist/diario-fernweh.apk
+          ls -la ../dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: diario-fernweh-apk
+          path: dist/diario-fernweh.apk
+
+      - name: Publicar em Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-v1.${{ github.run_number }}
+          name: Diário Fernweh 1.${{ github.run_number }}
+          body: |
+            App Android do Diário de Estrada.
+            Instale o arquivo diario-fernweh.apk no celular (pode ser por cima da versão anterior).
+          files: dist/diario-fernweh.apk
+          make_latest: true

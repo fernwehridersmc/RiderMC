@@ -1,0 +1,9 @@
+{
+  "appId": "com.fernwehriders.diario",
+  "appName": "Diário Fernweh",
+  "webDir": "www",
+  "android": {
+    "useLegacyBridge": true,
+    "backgroundColor": "#0F171D"
+  }
+}
