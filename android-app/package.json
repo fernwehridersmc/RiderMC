@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "App Android do Diário de Estrada (Fernweh Riders) — embrulha o index.html com Capacitor e grava o trajeto em segundo plano",
   "scripts": {
-    "prepare-www": "rm -rf www && mkdir -p www && cp ../index.html ../manifest.webmanifest www/ && cp -r ../assets www/"
+    "prepare-www": "node scripts/prepare_www.js"
   },
   "dependencies": {
     "@capacitor-community/background-geolocation": "1.3.1",

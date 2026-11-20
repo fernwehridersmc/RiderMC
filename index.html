@@ -2761,7 +2761,7 @@ async function addWatch(){
   clearInterval(recTimer);recTimer=setInterval(()=>{if(screen==="inicio"&&REC)updateRecLive();else updatePill()},1000);
 }
 async function startRec(){
-  if(!BG){toast("A gravação só funciona no app Android.");return}
+  if(!BG){toast(NATIVE?"O GPS do app não carregou. Atualize o app pela versão mais nova do link.":"A gravação só funciona no app Android.");return}
   try{if(LNOT){const pm=await LNOT.checkPermissions();if(pm.display!=="granted")await LNOT.requestPermissions()}}catch(e){}
   REC={ativo:true,inicio:Date.now(),pts:[],paradas:[],km:0};lastFix=null;recSave(true);
   try{await addWatch()}catch(e){toast("Não consegui ligar o GPS: "+(e.message||e));REC=null;localStorage.removeItem(REC_KEY);watchId=null}
